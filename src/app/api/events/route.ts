@@ -20,6 +20,6 @@ export async function GET(request: NextRequest) {
     return Response.json({ events: filtered });
   } catch (error) {
     console.error("Events fetch error:", error);
-    return Response.json({ error: "Failed to fetch events" }, { status: 500 });
+    return Response.json({ error: "Failed to fetch events", details: String(error), hasTursoUrl: !!process.env.TURSO_DATABASE_URL, hasTursoToken: !!process.env.TURSO_AUTH_TOKEN }, { status: 500 });
   }
 }
