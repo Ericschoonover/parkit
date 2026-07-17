@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  image             String?
+  role              String    @default("RENTER")
+  phone             String?
+  stripeAccountId    String?
+  stripeOnboarded   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  listings          Listing[]
+  bookings          Booking[]    @relation("RenterBookings")
+  reviewsGiven      Review[]     @relation("ReviewAuthor")
+  reviewsReceived   Review[]     @relation("ReviewSubject")
+  accounts          Account[]
+  sessions          Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Listing {
+  id              String   @id @default(cuid())
+  ownerId         String
+  title           String
+  description     String
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  lat             Float
+  lng             Float
+  pricePerHour    Float
+  pricePerEvent   Float?
+  capacity        Int      @default(1)
+  covered         Boolean  @default(false)
+  lit             Boolean  @default(false)
+  evCharging      Boolean  @default(false)
+  accessible      Boolean  @default(false)
+  photos          String   @default("[]")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([ownerId])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  venue       String
+  city        String
+  state       String
+  eventDate   DateTime
+  startTime   DateTime
+  endTime     DateTime?
+  lat         Float
+  lng         Float
+  eventType   String
+  description String?
+  createdAt   DateTime @default(now())
+
+  bookings Booking[]
+
+  @@index([eventDate])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  listingId       String
+  renterId        String
+  eventId         String?
+  startTime       DateTime
+  endTime         DateTime
+  status          String        @default("PENDING")
+  totalAmount     Float
+  platformFee     Float
+  ownerPayout     Float
+  paymentIntentId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  renter  User    @relation("RenterBookings", fields: [renterId], references: [id], onDelete: Cascade)
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  review  Review?
+
+  @@index([renterId])
+  @@index([listingId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  authorId  String
+  subjectId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  author  User    @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subject User    @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId])
+}
