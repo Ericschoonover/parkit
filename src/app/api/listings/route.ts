@@ -15,14 +15,6 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { active: true };
 
-  if (query) {
-    where.OR = [
-      { title: { contains: query } },
-      { address: { contains: query } },
-      { city: { contains: query } },
-    ];
-  }
-
   if (minPrice || maxPrice) {
     where.pricePerHour = {};
     if (minPrice) where.pricePerHour.gte = parseFloat(minPrice);
@@ -35,7 +27,7 @@ export async function GET(request: NextRequest) {
   if (accessible === "true") where.accessible = true;
 
   try {
-    const listings = await db.listing.findMany({
+    let listings = await db.listing.findMany({
       where,
       include: {
         owner: {
@@ -48,6 +40,16 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 50,
     });
+
+    if (query) {
+      const q = query.toLowerCase();
+      listings = listings.filter(
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.address.toLowerCase().includes(q) ||
+          l.city.toLowerCase().includes(q)
+      );
+    }
 
     // Get average ratings for each listing
     const listingsWithRatings = await Promise.all(
