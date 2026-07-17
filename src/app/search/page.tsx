@@ -23,8 +23,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Search, MapPin, Filter, Star, Car, Zap, Umbrella, Accessibility, SlidersHorizontal, X } from "lucide-react";
+import { Search, MapPin, Filter, Star, Car, Zap, Umbrella, Accessibility, SlidersHorizontal, X, Footprints } from "lucide-react";
 import Link from "next/link";
+import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distance";
 
 interface Listing {
   id: string;
@@ -48,6 +49,14 @@ interface Listing {
   reviews: {
     rating: number;
   }[];
+}
+
+interface EventVenue {
+  id: string;
+  name: string;
+  venue: string;
+  lat: number;
+  lng: number;
 }
 
 function FilterContent({
@@ -156,6 +165,7 @@ export default function SearchPage() {
     accessible: false,
   });
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
+  const [events, setEvents] = useState<EventVenue[]>([]);
   const mapContainer = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mapbox-gl Map type
   const map = useRef<InstanceType<any>>(null);
@@ -189,6 +199,11 @@ export default function SearchPage() {
   useEffect(() => {
     const load = async () => {
       await searchListings();
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        setEvents(data.events || []);
+      } catch {}
     };
     load();
   }, []);
@@ -247,6 +262,20 @@ export default function SearchPage() {
     return (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
   };
 
+  const getNearestVenue = (listing: Listing) => {
+    if (events.length === 0) return null;
+    let nearest = events[0];
+    let minDist = Infinity;
+    for (const event of events) {
+      const d = haversineDistance(listing.lat, listing.lng, event.lat, event.lng);
+      if (d < minDist) {
+        minDist = d;
+        nearest = event;
+      }
+    }
+    return { event: nearest, distance: minDist };
+  };
+
   const sortedListings = [...listings].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
@@ -257,6 +286,11 @@ export default function SearchPage() {
         return (Number(getAverageRating(b.reviews)) || 0) - (Number(getAverageRating(a.reviews)) || 0);
       case "spots":
         return b.capacity - a.capacity;
+      case "distance": {
+        const aNearest = getNearestVenue(a);
+        const bNearest = getNearestVenue(b);
+        return (aNearest?.distance ?? 999) - (bNearest?.distance ?? 999);
+      }
       default:
         return 0;
     }
@@ -351,6 +385,7 @@ export default function SearchPage() {
             <SelectItem value="price-high">Price: High to Low</SelectItem>
             <SelectItem value="rating">Highest Rated</SelectItem>
             <SelectItem value="spots">Most Spots</SelectItem>
+            <SelectItem value="distance">Nearest Venue</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -419,6 +454,16 @@ export default function SearchPage() {
                             <MapPin className="h-3 w-3 shrink-0" />
                             <span className="truncate">{listing.address}, {listing.city}</span>
                           </p>
+                          {(() => {
+                            const nearest = getNearestVenue(listing);
+                            if (!nearest || nearest.distance > 20) return null;
+                            return (
+                              <div className="flex items-center gap-1 mt-1 text-xs text-green-700 font-medium">
+                                <Footprints className="h-3 w-3" />
+                                {formatDistance(nearest.distance)} to {nearest.event.venue} &middot; {formatWalkTime(nearest.distance)}
+                              </div>
+                            );
+                          })()}
                           <div className="flex items-center gap-2 mt-1.5">
                             {getAverageRating(listing.reviews) && (
                               <span className="text-sm flex items-center gap-1">

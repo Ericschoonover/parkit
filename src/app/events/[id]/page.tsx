@@ -2,9 +2,10 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock } from "lucide-react";
+import { MapPin, Calendar, Clock, Footprints } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distance";
 
 export default async function EventDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -58,6 +59,12 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
     return (listingReviews.reduce((sum, r) => sum + r.rating, 0) / listingReviews.length).toFixed(1);
   };
 
+  const listingDistances = nearbyListings.map((listing) => ({
+    ...listing,
+    distance: haversineDistance(event.lat, event.lng, listing.lat, listing.lng),
+  }));
+  listingDistances.sort((a, b) => a.distance - b.distance);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Event Header */}
@@ -95,7 +102,7 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
-            {nearbyListings.map((listing) => {
+            {listingDistances.map((listing) => {
               const listingReviews = reviewsByListing[listing.id] || [];
               return (
                 <Link key={listing.id} href={`/listings/${listing.id}`}>
@@ -105,6 +112,10 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                         <div>
                           <h3 className="font-semibold">{listing.title}</h3>
                           <p className="text-sm text-muted-foreground">{listing.address}</p>
+                          <div className="flex items-center gap-1 mt-1 text-sm text-green-700 font-medium">
+                            <Footprints className="h-3.5 w-3.5" />
+                            {formatDistance(listing.distance)} &middot; {formatWalkTime(listing.distance)}
+                          </div>
                           {avgRating(listingReviews) && (
                             <p className="text-sm text-muted-foreground mt-1">
                               ⭐ {avgRating(listingReviews)} ({listingReviews.length} reviews)

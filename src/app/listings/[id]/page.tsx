@@ -2,9 +2,12 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Car, Umbrella, Zap, Accessibility, Shield } from "lucide-react";
+import { MapPin, Star, Car, Umbrella, Zap, Accessibility, Shield, Footprints, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
 import { BookingForm } from "@/components/booking-form";
 import { ReviewsSection } from "@/components/reviews-section";
+import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distance";
 
 export default async function ListingDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -40,6 +43,24 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
     reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
       : null;
+
+  const nearbyEvents = await db.event.findMany({
+    where: {
+      eventDate: { gte: new Date() },
+      lat: { gte: listing.lat - 0.15, lte: listing.lat + 0.15 },
+      lng: { gte: listing.lng - 0.15, lte: listing.lng + 0.15 },
+    },
+    orderBy: { eventDate: "asc" },
+    take: 6,
+  });
+
+  const eventsWithDistance = nearbyEvents
+    .map((event) => ({
+      ...event,
+      distance: haversineDistance(listing.lat, listing.lng, event.lat, event.lng),
+    }))
+    .filter((e) => e.distance <= 20)
+    .sort((a, b) => a.distance - b.distance);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -122,6 +143,41 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
             <h2 className="text-xl font-semibold mb-2">About This Space</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
           </div>
+
+          {/* Nearby Events */}
+          {eventsWithDistance.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-3">Upcoming Events Nearby</h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {eventsWithDistance.map((event) => (
+                  <Link key={event.id} href={`/events/${event.id}`}>
+                    <Card className="cursor-pointer transition-all hover:shadow-md">
+                      <CardContent className="p-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-sm">{event.name}</p>
+                            <p className="text-xs text-muted-foreground">{event.venue}</p>
+                            <div className="flex items-center gap-1 mt-1 text-xs text-green-700 font-medium">
+                              <Footprints className="h-3 w-3" />
+                              {formatDistance(event.distance)} &middot; {formatWalkTime(event.distance)}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(event.eventDate), "MMM d")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(event.startTime), "h:mm a")}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Reviews */}
           <ReviewsSection
