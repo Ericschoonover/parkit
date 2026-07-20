@@ -70,7 +70,7 @@ export default async function HomePage() {
                 size="lg"
                 variant="outline"
                 href="/listings/new"
-                className="border-white/30 text-white hover:bg-white/10 text-base"
+                className="border-white/60 text-white hover:bg-white/20 text-base font-semibold"
               >
                 List Your Spot
                 <ArrowRight className="ml-2 h-5 w-5" />
