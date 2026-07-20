@@ -2,10 +2,11 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, Footprints } from "lucide-react";
+import { MapPin, Calendar, Clock, Footprints, Ban } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distance";
+import { EventMap } from "@/components/event-map";
 
 export default async function EventDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -65,6 +66,19 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
   }));
   listingDistances.sort((a, b) => a.distance - b.distance);
 
+  // Get active booking counts
+  const listingIds = listingDistances.map((l) => l.id);
+  const bookingCounts = await db.booking.groupBy({
+    by: ["listingId"],
+    where: {
+      listingId: { in: listingIds },
+      status: { in: ["PENDING", "CONFIRMED"] },
+      endTime: { gte: new Date() },
+    },
+    _count: { id: true },
+  });
+  const bookingCountMap = new Map(bookingCounts.map((b) => [b.listingId, b._count.id]));
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Event Header */}
@@ -91,6 +105,30 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
         )}
       </div>
 
+      {/* Interactive Map */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Parking Near {event.venue}</h2>
+        <EventMap
+          eventLat={event.lat}
+          eventLng={event.lng}
+          eventVenue={event.venue}
+          listings={listingDistances.map((l) => ({
+            id: l.id,
+            title: l.title,
+            address: l.address,
+            lat: l.lat,
+            lng: l.lng,
+            price: Number(l.pricePerHour),
+            priceUnit: "/hr",
+            distance: formatDistance(l.distance),
+            walkTime: formatWalkTime(l.distance),
+            covered: l.covered,
+            capacity: l.capacity,
+            activeBookings: bookingCountMap.get(l.id) || 0,
+          }))}
+        />
+      </div>
+
       {/* Nearby Parking */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Nearby Parking ({nearbyListings.length})</h2>
@@ -110,7 +148,14 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-semibold">{listing.title}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{listing.title}</h3>
+                            {(bookingCountMap.get(listing.id) || 0) > 0 && (
+                              <Badge className="text-xs bg-red-100 text-red-700 border-0">
+                                <Ban className="h-2.5 w-2.5 mr-0.5" /> Booked
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">{listing.address}</p>
                           <div className="flex items-center gap-1 mt-1 text-sm text-green-700 font-medium">
                             <Footprints className="h-3.5 w-3.5" />

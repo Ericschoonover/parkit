@@ -18,8 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ParkIt - Parking Near Northwest Stadium & DC Venues",
-  description: "Rent driveways, garages, and private spots near Northwest Stadium, Capital One Arena, Nationals Park, and more. Save up to 70% vs stadium lots.",
+  title: "ParkIt - Affordable Parking Near Venues Nationwide",
+  description:
+    "Rent driveways, garages, and private spots near stadiums, arenas, and venues in 20+ cities. Save up to 70% on event parking. Boat & RV parking available.",
 };
 
 export default function RootLayout({
@@ -54,16 +55,17 @@ export default function RootLayout({
                     <ul className="space-y-1 text-sm text-muted-foreground">
                       <li><Link href="/search" className="hover:text-foreground transition-colors">Find Parking</Link></li>
                       <li><Link href="/events" className="hover:text-foreground transition-colors">Events</Link></li>
+                      <li><Link href="/search?type=boat" className="hover:text-foreground transition-colors">Boat & RV</Link></li>
                       <li><Link href="/listings/new" className="hover:text-foreground transition-colors">List Your Spot</Link></li>
                     </ul>
                   </div>
                   <div>
                     <p className="font-semibold mb-2 text-sm">Cities</p>
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Landover (NW Stadium)</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Downtown DC</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Navy Yard</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Bristow, VA</span></li>
+                      <li><Link href="/new-york-ny" className="hover:text-foreground transition-colors">New York, NY</Link></li>
+                      <li><Link href="/los-angeles-ca" className="hover:text-foreground transition-colors">Los Angeles, CA</Link></li>
+                      <li><Link href="/chicago-il" className="hover:text-foreground transition-colors">Chicago, IL</Link></li>
+                      <li><Link href="/dallas-tx" className="hover:text-foreground transition-colors">Dallas, TX</Link></li>
                     </ul>
                   </div>
                   <div>
@@ -71,8 +73,8 @@ export default function RootLayout({
                     <ul className="space-y-1 text-sm text-muted-foreground">
                       <li><span className="hover:text-foreground transition-colors cursor-default">About</span></li>
                       <li><span className="hover:text-foreground transition-colors cursor-default">Safety</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Terms</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Privacy</span></li>
+                      <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
+                      <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
                     </ul>
                   </div>
                 </div>

@@ -15,13 +15,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Car, MapPin, Calendar, Plus, LogOut, User, LayoutDashboard, Bookmark, CreditCard, ChevronDown } from "lucide-react";
+import { Car, MapPin, Calendar, Plus, LogOut, User, LayoutDashboard, Bookmark, CreditCard, ChevronDown, Anchor } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { CitySelector } from "@/components/city-selector";
 
 const navLinks = [
   { href: "/search", label: "Find Parking", icon: MapPin },
+  { href: "/search?type=boat", label: "Boat & RV", icon: Anchor },
   { href: "/events", label: "Events", icon: Calendar },
 ];
 
@@ -73,6 +75,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <CitySelector />
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="ghost" className="gap-2 pl-1 pr-2 h-10 rounded-full border" />}>

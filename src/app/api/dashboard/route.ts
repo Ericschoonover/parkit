@@ -66,6 +66,12 @@ export async function GET() {
       take: 5,
     });
 
+    // Get user's Stripe status
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { stripeOnboarded: true },
+    });
+
     return Response.json({
       stats: {
         totalListings,
@@ -78,6 +84,7 @@ export async function GET() {
           : null,
       },
       recentBookings,
+      stripeOnboarded: user?.stripeOnboarded || false,
     });
   } catch (error) {
     console.error("Dashboard error:", error);

@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Car, Calendar, DollarSign, Star, Plus, ArrowRight } from "lucide-react";
+import { Car, Calendar, DollarSign, Star, Plus, ArrowRight, CreditCard, CheckCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface RecentBooking {
   id: string;
@@ -50,6 +51,8 @@ export default function DashboardPage() {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingFilter, setBookingFilter] = useState("all");
+  const [stripeOnboarded, setStripeOnboarded] = useState<boolean | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -57,10 +60,28 @@ export default function DashboardPage() {
       const data = await res.json();
       setStats(data.stats);
       setRecentBookings(data.recentBookings || []);
+      setStripeOnboarded(data.stripeOnboarded || false);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStripeConnect = async () => {
+    setStripeLoading(true);
+    try {
+      const res = await fetch("/api/stripe/connect", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Failed to start onboarding");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to start Stripe onboarding");
+    } finally {
+      setStripeLoading(false);
     }
   };
 
@@ -135,6 +156,57 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Stripe Onboarding Banner */}
+      {stripeOnboarded === false && (
+        <Card className="mb-8 border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Connect to Stripe</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Connect your bank account to receive payouts when guests book your spots.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleStripeConnect}
+                disabled={stripeLoading}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                {stripeLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
+                {stripeLoading ? "Connecting..." : "Connect Now"}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {stripeOnboarded === true && (
+        <Card className="mb-8 border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-800">Stripe Connected</h3>
+                <p className="text-sm text-green-600">
+                  Your bank account is connected. You&apos;ll receive payouts automatically after bookings complete.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Bookings */}
       <Card>

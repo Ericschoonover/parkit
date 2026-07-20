@@ -1,0 +1,2 @@
+ALTER TABLE "Booking" ADD COLUMN "beforePhotos" TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE "Booking" ADD COLUMN "afterPhotos" TEXT NOT NULL DEFAULT '[]';

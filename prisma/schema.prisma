@@ -6,9 +6,45 @@ datasource db {
   provider = "sqlite"
 }
 
+model City {
+  id          String   @id @default(cuid())
+  name        String
+  state       String
+  slug        String   @unique
+  lat         Float
+  lng         Float
+  timezone    String
+  active      Boolean  @default(true)
+  venues      Venue[]
+  listings    Listing[]
+  events      Event[]
+  createdAt   DateTime @default(now())
+
+  @@unique([name, state])
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  cityId      String
+  address     String?
+  lat         Float
+  lng         Float
+  venueType   String
+  capacity    Int?
+  createdAt   DateTime @default(now())
+
+  city        City      @relation(fields: [cityId], references: [id])
+  events      Event[]
+  listings    Listing[] @relation("VenueListings")
+
+  @@index([cityId])
+}
+
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
+  emailVerified     DateTime?
   name              String?
   image             String?
   role              String    @default("RENTER")
@@ -73,8 +109,11 @@ model Listing {
   zipCode         String
   lat             Float
   lng             Float
-  pricePerHour    Float
+  pricePerHour    Float?
   pricePerEvent   Float?
+  pricePerDay     Float?
+  pricePerWeek    Float?
+  pricePerMonth   Float?
   capacity        Int      @default(1)
   covered         Boolean  @default(false)
   lit             Boolean  @default(false)
@@ -82,13 +121,33 @@ model Listing {
   accessible      Boolean  @default(false)
   photos          String   @default("[]")
   active          Boolean  @default(true)
+  parkingType     String   @default("EVENT")
+  cityId          String?
+  venueId         String?
+  vehicleLength   Float?
+  vehicleWidth    Float?
+  vehicleHeight   Float?
+  hookups         String?
+  gated           Boolean  @default(false)
+  monthlyRate     Float?
+  minDuration     Int?
+  maxDuration     Int?
+  spotType        String?
+  surfaceType     String?
+  maxClearance    Float?
+  securityCamera  Boolean  @default(false)
+  accessInstructions String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   bookings Booking[]
+  cityRef  City?     @relation(fields: [cityId], references: [id])
+  venue    Venue?    @relation("VenueListings", fields: [venueId], references: [id])
 
   @@index([ownerId])
+  @@index([cityId])
+  @@index([parkingType])
 }
 
 model Event {
@@ -104,11 +163,16 @@ model Event {
   lng         Float
   eventType   String
   description String?
+  cityId      String?
+  venueId     String?
   createdAt   DateTime @default(now())
 
   bookings Booking[]
+  cityRef  City?  @relation(fields: [cityId], references: [id])
+  venueRef Venue? @relation(fields: [venueId], references: [id])
 
   @@index([eventDate])
+  @@index([cityId])
 }
 
 model Booking {
@@ -123,6 +187,8 @@ model Booking {
   platformFee     Float
   ownerPayout     Float
   paymentIntentId String?
+  beforePhotos    String        @default("[]")
+  afterPhotos     String        @default("[]")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

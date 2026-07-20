@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, User, Car } from "lucide-react";
+import { MapPin, Calendar, Clock, User, Car, Camera } from "lucide-react";
 import { format } from "date-fns";
+import { BookingPhotos } from "@/components/booking-photos";
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -41,6 +42,9 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
   if (!isOwner && !isRenter) {
     notFound();
   }
+
+  const beforePhotos = JSON.parse(booking.beforePhotos) as string[];
+  const afterPhotos = JSON.parse(booking.afterPhotos) as string[];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -107,6 +111,26 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
                 </span>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Photo Documentation */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Camera className="h-4 w-4" />
+              <h3 className="font-semibold">Photo Documentation</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Both parties should document the parking space condition before and after the booking for dispute protection.
+            </p>
+            <BookingPhotos
+              bookingId={booking.id}
+              beforePhotos={beforePhotos}
+              afterPhotos={afterPhotos}
+              isRenter={isRenter}
+              isOwner={isOwner}
+            />
           </CardContent>
         </Card>
 
