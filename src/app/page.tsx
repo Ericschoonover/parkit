@@ -68,8 +68,9 @@ export default async function HomePage() {
               <CitySelector size="lg" />
               <LinkButton
                 size="lg"
+                variant="ghost"
                 href="/listings/new"
-                className="border-2 border-white/80 bg-white/10 text-white hover:bg-white/20 hover:text-white text-base font-semibold backdrop-blur-sm"
+                className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white text-base font-semibold rounded-lg"
               >
                 List Your Spot
                 <ArrowRight className="ml-2 h-5 w-5" />
