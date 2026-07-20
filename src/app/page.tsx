@@ -66,15 +66,13 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <CitySelector size="lg" />
-              <LinkButton
-                size="lg"
-                variant="ghost"
+              <Link
                 href="/listings/new"
-                className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white text-base font-semibold rounded-lg"
+                className="inline-flex items-center justify-center h-12 px-5 text-base font-semibold text-white border-2 border-white/80 rounded-lg hover:bg-white/20 transition-all"
               >
                 List Your Spot
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </LinkButton>
+              </Link>
             </div>
           </div>
         </div>
