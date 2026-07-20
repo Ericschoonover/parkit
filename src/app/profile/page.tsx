@@ -7,13 +7,72 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { User, Search, Store, ArrowRightLeft, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, Search, Store, ArrowRightLeft, Shield, Star, MapPin, Calendar, Car } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
+import { format } from "date-fns";
+
+interface ProfileData {
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    phone: string | null;
+    role: string;
+    createdAt: string;
+    stripeOnboarded: boolean;
+  };
+  listings: Array<{
+    id: string;
+    title: string;
+    city: string;
+    state: string;
+    pricePerHour: number | null;
+    pricePerDay: number | null;
+    active: boolean;
+    parkingType: string;
+    _count: { bookings: number };
+  }>;
+  bookings: Array<{
+    id: string;
+    startTime: string;
+    endTime: string;
+    totalAmount: number;
+    status: string;
+    listing: { id: string; title: string; city: string };
+  }>;
+  reviewsReceived: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    author: { name: string | null; image: string | null };
+    booking: { id: string };
+  }>;
+  reviewsGiven: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    subject: { name: string | null; image: string | null };
+    booking: { id: string; listing: { title: string } };
+  }>;
+  stats: {
+    totalListings: number;
+    totalBookings: number;
+    avgRating: number | null;
+    totalReviews: number;
+  };
+}
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [activeTab, setActiveTab] = useState<"listings" | "bookings" | "reviews">("listings");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,19 +84,23 @@ export default function ProfilePage() {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
-    const load = () => {
-      if (session?.user) {
-        const u = session.user;
-        setFormData({
-          name: u.name ?? "",
-          email: u.email ?? "",
-          phone: (typeof (u as Record<string, unknown>).phone === "string" ? (u as Record<string, unknown>).phone as string : "") || "",
-          role: (typeof (u as Record<string, unknown>).role === "string" ? (u as Record<string, unknown>).role as string : "RENTER"),
-        });
-      }
-    };
-    load();
-  }, [session, status, router]);
+    if (status === "authenticated") {
+      fetch("/api/profile")
+        .then((r) => r.json())
+        .then((data) => {
+          setProfileData(data);
+          if (data.user) {
+            setFormData({
+              name: data.user.name ?? "",
+              email: data.user.email ?? "",
+              phone: data.user.phone ?? "",
+              role: data.user.role ?? "RENTER",
+            });
+          }
+        })
+        .catch(console.error);
+    }
+  }, [status, router]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -47,9 +110,7 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       if (!res.ok) throw new Error("Failed to update profile");
-
       toast.success("Profile updated!");
       update();
     } catch {
@@ -59,7 +120,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (status === "loading") {
+  if (status === "loading" || !profileData) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4 max-w-2xl">
@@ -77,8 +138,35 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">Profile</h1>
+    <div className="container mx-auto px-4 py-8 max-w-3xl">
+      {/* Profile Header */}
+      <div className="flex items-start gap-6 mb-8">
+        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center overflow-hidden shrink-0">
+          {session?.user?.image ? (
+            <img src={session.user.image} alt="" className="w-full h-full rounded-full object-cover" />
+          ) : (
+            <User className="h-10 w-10 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">{profileData.user.name || "Unnamed User"}</h1>
+          <p className="text-muted-foreground">{profileData.user.email}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Member since {format(new Date(profileData.user.createdAt), "MMMM yyyy")}
+          </p>
+          <div className="flex gap-4 mt-3">
+            {profileData.stats.avgRating && (
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="font-semibold">{profileData.stats.avgRating}</span>
+                <span className="text-sm text-muted-foreground">({profileData.stats.totalReviews})</span>
+              </div>
+            )}
+            <Badge variant="secondary">{profileData.stats.totalListings} listings</Badge>
+            <Badge variant="secondary">{profileData.stats.totalBookings} bookings</Badge>
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-6">
         {/* Profile Info */}
@@ -88,20 +176,6 @@ export default function ProfilePage() {
             <CardDescription>Update your account details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center overflow-hidden">
-                {session?.user?.image ? (
-                  <img src={session.user.image} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User className="h-8 w-8 text-muted-foreground" />
-                )}
-              </div>
-              <div>
-                <p className="font-medium">{session?.user?.name}</p>
-                <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
-              </div>
-            </div>
-
             <div>
               <Label htmlFor="name">Name</Label>
               <Input
@@ -113,13 +187,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                disabled
-                className="mt-1.5"
-              />
+              <Input id="email" type="email" value={formData.email} disabled className="mt-1.5" />
             </div>
             <div>
               <Label htmlFor="phone">Phone</Label>
@@ -165,7 +233,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Stripe Onboarding */}
+        {/* Stripe */}
         <Card>
           <CardHeader>
             <CardTitle>Payments</CardTitle>
@@ -179,11 +247,171 @@ export default function ProfilePage() {
               <div className="flex-1">
                 <p className="font-medium">Stripe Connect</p>
                 <p className="text-sm text-muted-foreground">
-                  Connect your Stripe account to receive payments for your parking spaces
+                  {profileData.user.stripeOnboarded
+                    ? "Your account is connected and ready to receive payouts"
+                    : "Connect your Stripe account to receive payments for your parking spaces"}
                 </p>
               </div>
-              <Button variant="outline" className="shrink-0">Connect Stripe</Button>
+              {profileData.user.stripeOnboarded ? (
+                <Badge className="bg-green-100 text-green-700">Connected</Badge>
+              ) : (
+                <Link href="/dashboard">
+                  <Button variant="outline" className="shrink-0">Connect</Button>
+                </Link>
+              )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Activity Tabs */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex gap-1 mb-6 border-b pb-3">
+              {(["listings", "bookings", "reviews"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                    activeTab === tab
+                      ? "bg-green-100 text-green-700"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Listings Tab */}
+            {activeTab === "listings" && (
+              <div className="space-y-3">
+                {profileData.listings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Car className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="font-medium">No listings yet</p>
+                    <Link href="/listings/new">
+                      <Button className="mt-3 bg-green-600 hover:bg-green-700" size="sm">List Your Space</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  profileData.listings.map((listing) => (
+                    <Link
+                      key={listing.id}
+                      href={`/listings/${listing.id}`}
+                      className="flex items-center justify-between p-3 border rounded-xl hover:bg-muted/50 transition-all"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{listing.title}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {listing.city}, {listing.state}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">
+                          {listing.pricePerHour ? `$${listing.pricePerHour}/hr` : listing.pricePerDay ? `$${listing.pricePerDay}/day` : "—"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={listing.active ? "default" : "secondary"} className="text-xs">
+                            {listing.active ? "Active" : "Inactive"}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{listing._count.bookings} bookings</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Bookings Tab */}
+            {activeTab === "bookings" && (
+              <div className="space-y-3">
+                {profileData.bookings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="font-medium">No bookings yet</p>
+                    <Link href="/search">
+                      <Button className="mt-3 bg-green-600 hover:bg-green-700" size="sm">Find Parking</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  profileData.bookings.map((booking) => (
+                    <Link
+                      key={booking.id}
+                      href={`/bookings/${booking.id}`}
+                      className="flex items-center justify-between p-3 border rounded-xl hover:bg-muted/50 transition-all"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{booking.listing.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(booking.startTime), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">${Number(booking.totalAmount).toFixed(2)}</p>
+                        <Badge
+                          variant={
+                            booking.status === "CONFIRMED" ? "default"
+                            : booking.status === "COMPLETED" ? "secondary"
+                            : "destructive"
+                          }
+                          className="text-xs mt-1"
+                        >
+                          {booking.status}
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Reviews Tab */}
+            {activeTab === "reviews" && (
+              <div className="space-y-3">
+                {profileData.reviewsReceived.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Star className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="font-medium">No reviews yet</p>
+                    <p className="text-sm text-muted-foreground mt-1">Reviews appear after completed bookings</p>
+                  </div>
+                ) : (
+                  profileData.reviewsReceived.map((review) => (
+                    <div key={review.id} className="p-3 border rounded-xl">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center overflow-hidden">
+                            {review.author.image ? (
+                              <img src={review.author.image} alt="" className="w-full h-full rounded-full" />
+                            ) : (
+                              <User className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">{review.author.name || "Anonymous"}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(review.createdAt), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                      <div className="flex gap-0.5 mb-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= review.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-muted-foreground mt-1">{review.comment}</p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

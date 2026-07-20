@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Clock, User, Car, Camera } from "lucide-react";
+import { MapPin, Calendar, Clock, User, Car, Camera, Star } from "lucide-react";
 import { format } from "date-fns";
 import { BookingPhotos } from "@/components/booking-photos";
+import { BookingActions } from "@/components/booking-actions";
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -29,6 +30,7 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
         select: { name: true, image: true, email: true },
       },
       event: true,
+      review: true,
     },
   });
 
@@ -45,6 +47,7 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
 
   const beforePhotos = JSON.parse(booking.beforePhotos) as string[];
   const afterPhotos = JSON.parse(booking.afterPhotos) as string[];
+  const isPast = new Date(booking.endTime) < new Date();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -55,7 +58,9 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
               ? "default"
               : booking.status === "COMPLETED"
               ? "secondary"
-              : "destructive"
+              : booking.status === "CANCELLED"
+              ? "destructive"
+              : "outline"
           }
           className="mb-2"
         >
@@ -65,6 +70,17 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
       </div>
 
       <div className="space-y-4">
+        {/* Cancel / Review Actions */}
+        <BookingActions
+          bookingId={booking.id}
+          status={booking.status}
+          startTime={booking.startTime.toISOString()}
+          isOwner={isOwner}
+          isRenter={isRenter}
+          hasReview={!!booking.review}
+          isPast={isPast}
+        />
+
         {/* Listing Info */}
         <Card>
           <CardContent className="pt-6">
@@ -152,6 +168,33 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
             </div>
           </CardContent>
         </Card>
+
+        {/* Existing Review */}
+        {booking.review && (
+          <Card className="border-amber-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="h-4 w-4 text-amber-500" />
+                <h3 className="font-semibold">Review</h3>
+              </div>
+              <div className="flex gap-1 mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`h-5 w-5 ${
+                      star <= booking.review!.rating
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                ))}
+              </div>
+              {booking.review.comment && (
+                <p className="text-sm text-muted-foreground">{booking.review.comment}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contact */}
         <Card>

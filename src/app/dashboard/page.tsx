@@ -41,6 +41,7 @@ interface DashboardStats {
   totalListings: number;
   totalBookings: number;
   totalEarnings: number;
+  pendingEarnings: number;
   avgRating: number | null;
 }
 
@@ -53,6 +54,8 @@ export default function DashboardPage() {
   const [bookingFilter, setBookingFilter] = useState("all");
   const [stripeOnboarded, setStripeOnboarded] = useState<boolean | null>(null);
   const [stripeLoading, setStripeLoading] = useState(false);
+  const [monthlyEarnings, setMonthlyEarnings] = useState<Record<string, number>>({});
+  const [upcomingAsHost, setUpcomingAsHost] = useState<Array<RecentBooking & { renter: { name: string | null } }>>([]);
 
   const fetchDashboardData = async () => {
     try {
@@ -61,6 +64,8 @@ export default function DashboardPage() {
       setStats(data.stats);
       setRecentBookings(data.recentBookings || []);
       setStripeOnboarded(data.stripeOnboarded || false);
+      setMonthlyEarnings(data.monthlyEarnings || {});
+      setUpcomingAsHost(data.upcomingAsHost || []);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
@@ -121,7 +126,7 @@ export default function DashboardPage() {
   const statCards = [
     { label: "My Listings", value: stats?.totalListings || 0, icon: Car, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Total Bookings", value: stats?.totalBookings || 0, icon: Calendar, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Earnings", value: `$${stats?.totalEarnings || 0}`, icon: DollarSign, color: "text-amber-600", bg: "bg-amber-50" },
+    { label: "Earned", value: `$${(stats?.totalEarnings || 0).toFixed(2)}`, sub: stats?.pendingEarnings ? `+$${stats.pendingEarnings.toFixed(2)} pending` : undefined, icon: DollarSign, color: "text-amber-600", bg: "bg-amber-50" },
     { label: "Avg Rating", value: stats?.avgRating || "-", icon: Star, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
@@ -147,6 +152,9 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                  {"sub" in stat && stat.sub && (
+                    <p className="text-xs text-amber-600 mt-0.5">{stat.sub}</p>
+                  )}
                 </div>
                 <div className={`w-11 h-11 ${stat.bg} rounded-xl flex items-center justify-center`}>
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -203,6 +211,82 @@ export default function DashboardPage() {
                   Your bank account is connected. You&apos;ll receive payouts automatically after bookings complete.
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Earnings Breakdown */}
+      {stats && stats.totalEarnings > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Earnings Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="p-3 bg-green-50 rounded-xl">
+                <p className="text-xs text-green-600 font-medium">Total Earned</p>
+                <p className="text-xl font-bold text-green-700">${stats.totalEarnings.toFixed(2)}</p>
+              </div>
+              <div className="p-3 bg-amber-50 rounded-xl">
+                <p className="text-xs text-amber-600 font-medium">Pending</p>
+                <p className="text-xl font-bold text-amber-700">${(stats.pendingEarnings || 0).toFixed(2)}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-xl">
+                <p className="text-xs text-blue-600 font-medium">Platform Fees (15%)</p>
+                <p className="text-xl font-bold text-blue-700">${(stats.totalEarnings * 0.15 / 0.85).toFixed(2)}</p>
+              </div>
+            </div>
+            {Object.keys(monthlyEarnings).length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Monthly Breakdown</p>
+                <div className="space-y-1">
+                  {Object.entries(monthlyEarnings)
+                    .sort(([a], [b]) => b.localeCompare(a))
+                    .map(([month, amount]) => (
+                      <div key={month} className="flex justify-between text-sm py-1 border-b last:border-0">
+                        <span className="text-muted-foreground">{month}</span>
+                        <span className="font-medium">${Number(amount).toFixed(2)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Upcoming as Host */}
+      {upcomingAsHost.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Upcoming Bookings (Host)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingAsHost.map((booking) => (
+                <Link
+                  key={booking.id}
+                  href={`/bookings/${booking.id}`}
+                  className="flex items-center justify-between p-3 border rounded-xl hover:bg-muted/50 transition-all"
+                >
+                  <div>
+                    <p className="font-medium text-sm">{booking.listing.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Renter: {booking.renter.name || "Unknown"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(booking.startTime), "MMM d, h:mm a")} - {format(new Date(booking.endTime), "h:mm a")}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">${Number(booking.totalAmount).toFixed(2)}</p>
+                    <Badge variant={booking.status === "CONFIRMED" ? "default" : "outline"} className="text-xs mt-1">
+                      {booking.status}
+                    </Badge>
+                  </div>
+                </Link>
+              ))}
             </div>
           </CardContent>
         </Card>

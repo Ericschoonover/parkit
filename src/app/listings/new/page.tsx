@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, X, Umbrella, Zap, Accessibility, Lightbulb, ImageIcon, Car, Anchor, Truck, Clock, Lock, Camera, Info, Route } from "lucide-react";
+import { MapPin, X, Umbrella, Zap, Accessibility, Lightbulb, ImageIcon, Car, Anchor, Truck, Clock, Lock, Camera, Info, Route, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 const US_STATES = [
@@ -108,6 +108,7 @@ function NewListingForm() {
     maxClearance: "",
     securityCamera: false,
     accessInstructions: "",
+    hasInsurance: false,
   });
 
   useEffect(() => {
@@ -766,10 +767,42 @@ function NewListingForm() {
               </div>
             </div>
 
+            {/* Insurance Acknowledgment */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Insurance
+              </h3>
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardContent className="pt-4 pb-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox
+                      checked={formData.hasInsurance}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, hasInsurance: !!checked })
+                      }
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <p className="text-sm font-medium">
+                        I confirm I have homeowner&apos;s or renter&apos;s insurance that covers third-party vehicle parking on my property
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        ParkIt is a marketplace, not an insurer. You are responsible for maintaining adequate insurance.{" "}
+                        <a href="/terms#insurance" className="underline hover:text-foreground">
+                          View insurance requirements
+                        </a>
+                      </p>
+                    </div>
+                  </label>
+                </CardContent>
+              </Card>
+            </div>
+
             <Button
               type="submit"
               className="w-full bg-green-600 hover:bg-green-700 h-11"
-              disabled={loading}
+              disabled={loading || !formData.hasInsurance}
             >
               {loading ? "Creating..." : "Create Listing"}
             </Button>

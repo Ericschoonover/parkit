@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { listingId, bookingId, rating, comment } = body;
+    const { bookingId, rating, comment } = body;
 
-    if (!listingId || !rating) {
+    if (!bookingId || !rating) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -21,20 +21,51 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Rating must be between 1 and 5" }, { status: 400 });
     }
 
-    // Get listing to find owner
-    const listing = await db.listing.findUnique({
-      where: { id: listingId },
+    // Fetch booking with listing owner info
+    const booking = await db.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        listing: { select: { ownerId: true } },
+        renter: { select: { id: true } },
+      },
     });
 
-    if (!listing) {
-      return Response.json({ error: "Listing not found" }, { status: 404 });
+    if (!booking) {
+      return Response.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (booking.status !== "COMPLETED") {
+      return Response.json({ error: "Can only review completed bookings" }, { status: 400 });
+    }
+
+    const isOwner = booking.listing.ownerId === session.user.id;
+    const isRenter = booking.renterId === session.user.id;
+
+    if (!isOwner && !isRenter) {
+      return Response.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    // Determine who is being reviewed
+    // Renter reviews the host (listing owner), host reviews the renter
+    const subjectId = isRenter ? booking.listing.ownerId : booking.renterId;
+
+    // Check for existing review from this author on this booking
+    const existing = await db.review.findFirst({
+      where: {
+        bookingId,
+        authorId: session.user.id,
+      },
+    });
+
+    if (existing) {
+      return Response.json({ error: "You have already reviewed this booking" }, { status: 400 });
     }
 
     const review = await db.review.create({
       data: {
-        bookingId: bookingId || `manual-${Date.now()}`,
+        bookingId,
         authorId: session.user.id,
-        subjectId: listing.ownerId,
+        subjectId,
         rating: parseInt(rating),
         comment: comment || null,
       },

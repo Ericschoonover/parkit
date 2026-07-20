@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+function formatMonth(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export async function GET() {
   const session = await auth();
 
@@ -72,6 +76,49 @@ export async function GET() {
       select: { stripeOnboarded: true },
     });
 
+    // Pending earnings (confirmed bookings that haven't ended yet)
+    const pendingResult = await db.booking.aggregate({
+      where: {
+        listing: { ownerId: userId },
+        status: "CONFIRMED",
+        endTime: { gte: new Date() },
+      },
+      _sum: { ownerPayout: true },
+    });
+
+    // Upcoming bookings as host
+    const upcomingAsHost = await db.booking.findMany({
+      where: {
+        listing: { ownerId: userId },
+        status: { in: ["PENDING", "CONFIRMED"] },
+        startTime: { gte: new Date() },
+      },
+      include: {
+        listing: { select: { title: true } },
+        renter: { select: { name: true } },
+      },
+      orderBy: { startTime: "asc" },
+      take: 5,
+    });
+
+    // Monthly earnings (last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const monthlyBookings = await db.booking.findMany({
+      where: {
+        listing: { ownerId: userId },
+        status: "COMPLETED",
+        endTime: { gte: sixMonthsAgo },
+      },
+      select: { ownerPayout: true, endTime: true },
+    });
+
+    const monthlyEarnings: Record<string, number> = {};
+    monthlyBookings.forEach((b) => {
+      const key = formatMonth(b.endTime);
+      monthlyEarnings[key] = (monthlyEarnings[key] || 0) + Number(b.ownerPayout);
+    });
+
     return Response.json({
       stats: {
         totalListings,
@@ -79,11 +126,16 @@ export async function GET() {
         totalEarnings: earningsResult._sum.ownerPayout
           ? Number(earningsResult._sum.ownerPayout)
           : 0,
+        pendingEarnings: pendingResult._sum.ownerPayout
+          ? Number(pendingResult._sum.ownerPayout)
+          : 0,
         avgRating: reviewsResult._avg.rating
           ? Number(reviewsResult._avg.rating).toFixed(1)
           : null,
       },
       recentBookings,
+      upcomingAsHost,
+      monthlyEarnings,
       stripeOnboarded: user?.stripeOnboarded || false,
     });
   } catch (error) {
