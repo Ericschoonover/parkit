@@ -75,6 +75,8 @@ function NewListingForm() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedState, setSelectedState] = useState("");
+  const [citySuggestions, setCitySuggestions] = useState<City[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -129,10 +131,6 @@ function NewListingForm() {
       }
     }
   }, [searchParams, cities]);
-
-  const filteredCities = selectedState
-    ? cities.filter((c) => c.state === selectedState)
-    : [];
 
   if (status === "unauthenticated") {
     router.push("/auth/signin");
@@ -336,28 +334,59 @@ function NewListingForm() {
                 </div>
                 <div className="col-span-3">
                   <Label>City</Label>
-                  <Select
-                    value={formData.cityId}
-                    disabled={!selectedState}
-                    onValueChange={(v) => {
-                      if (!v) return;
-                      const city = filteredCities.find((c) => c.id === v);
-                      if (city) {
-                        setFormData({ ...formData, city: city.name, state: city.state, cityId: city.id });
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder={selectedState ? "Select city" : "Select state first"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredCities.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="relative mt-1.5">
+                    <Input
+                      placeholder={selectedState ? "Type any city name..." : "Select state first"}
+                      disabled={!selectedState}
+                      value={formData.city}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, city: val, cityId: "" });
+                        if (val.length >= 1 && selectedState) {
+                          const matches = cities.filter(
+                            (c) => c.state === selectedState && c.name.toLowerCase().startsWith(val.toLowerCase())
+                          );
+                          setCitySuggestions(matches.slice(0, 8));
+                          setShowSuggestions(matches.length > 0);
+                        } else {
+                          setShowSuggestions(false);
+                        }
+                      }}
+                      onFocus={() => {
+                        if (formData.city.length >= 1 && selectedState) {
+                          const matches = cities.filter(
+                            (c) => c.state === selectedState && c.name.toLowerCase().startsWith(formData.city.toLowerCase())
+                          );
+                          setCitySuggestions(matches.slice(0, 8));
+                          setShowSuggestions(matches.length > 0);
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      className="mt-1.5"
+                      required
+                    />
+                    {showSuggestions && citySuggestions.length > 0 && (
+                      <div className="absolute z-50 top-full mt-1 w-full bg-white border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        {citySuggestions.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-green-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, city: c.name, cityId: c.id });
+                              setShowSuggestions(false);
+                            }}
+                          >
+                            {c.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Any city or town in {selectedState || "the US"} — we&apos;ll find it on the map
+                  </p>
                 </div>
                 <div className="col-span-1">
                   <Label htmlFor="zipCode">ZIP</Label>
