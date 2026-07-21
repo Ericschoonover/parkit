@@ -1,7 +1,6 @@
 import { LinkButton } from "@/components/link-button";
 import { db } from "@/lib/db";
 import { CitySelector } from "@/components/city-selector";
-import { StatesGrid } from "@/components/states-grid";
 import {
   MapPin,
   Shield,
@@ -35,12 +34,7 @@ export default async function HomePage() {
     }),
   ]);
 
-  const citiesByState: Record<string, typeof cities> = {};
-  cities.forEach((city) => {
-    if (!citiesByState[city.state]) citiesByState[city.state] = [];
-    citiesByState[city.state].push(city);
-  });
-  const sortedStates = Object.keys(citiesByState).sort();
+  const sortedStates = [...new Set(cities.map(c => c.state))].sort();
 
   return (
     <div className="flex flex-col">
@@ -119,19 +113,6 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* States Grid */}
-      <section className="py-16 lg:py-24 bg-background border-y">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Find Parking Near You</h2>
-            <p className="text-muted-foreground">
-              Available in {cities.length} cities across {sortedStates.length} states
-            </p>
-          </div>
-          <StatesGrid citiesByState={citiesByState} sortedStates={sortedStates} />
         </div>
       </section>
 
