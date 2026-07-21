@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -77,6 +77,7 @@ function NewListingForm() {
   const [selectedState, setSelectedState] = useState("");
   const [citySuggestions, setCitySuggestions] = useState<City[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -177,9 +178,23 @@ function NewListingForm() {
     }
   };
 
-  const addPhoto = () => {
-    const mockUrl = `https://picsum.photos/seed/${Date.now()}/800/600`;
-    setPhotos([...photos, mockUrl]);
+  const handlePhotoUpload = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotos((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const removePhoto = (index: number) => {
@@ -234,6 +249,17 @@ function NewListingForm() {
             <div>
               <Label>Photos</Label>
               <p className="text-xs text-muted-foreground mb-2">Add photos to help people find your spot</p>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  handlePhotoUpload(e.target.files);
+                  e.target.value = "";
+                }}
+              />
               <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo, i) => (
                   <div key={i} className="relative aspect-square bg-muted rounded-xl overflow-hidden group">
@@ -249,7 +275,7 @@ function NewListingForm() {
                 ))}
                 <button
                   type="button"
-                  onClick={addPhoto}
+                  onClick={() => photoInputRef.current?.click()}
                   className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-muted-foreground hover:border-green-600 hover:text-green-600 transition-colors"
                 >
                   <ImageIcon className="h-6 w-6 mb-1" />

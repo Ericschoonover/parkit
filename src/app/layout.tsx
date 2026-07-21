@@ -71,8 +71,8 @@ export default function RootLayout({
                   <div>
                     <p className="font-semibold mb-2 text-sm">Company</p>
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li><span className="hover:text-foreground transition-colors cursor-default">About</span></li>
-                      <li><span className="hover:text-foreground transition-colors cursor-default">Safety</span></li>
+                      <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
+                      <li><Link href="/safety" className="hover:text-foreground transition-colors">Safety</Link></li>
                       <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
                       <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
                     </ul>
