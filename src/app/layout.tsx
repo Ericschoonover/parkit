@@ -18,9 +18,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ParkIt - Affordable Parking Near Venues Nationwide",
+  title: "ParkIt - Nationwide Parking Marketplace",
   description:
     "ParkIt is a nationwide peer-to-peer parking marketplace. List or rent driveways, garages, lots, boat slips, and RV pads in any city across the US.",
+  openGraph: {
+    title: "ParkIt - Nationwide Parking Marketplace",
+    description:
+      "List or rent driveways, garages, lots, boat slips, and RV pads in any city across the US.",
+    siteName: "ParkIt",
+    type: "website",
+    url: "https://park-it.net",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ParkIt - Nationwide Parking Marketplace",
+    description:
+      "List or rent driveways, garages, lots, boat slips, and RV pads in any city across the US.",
+  },
 };
 
 export default function RootLayout({
