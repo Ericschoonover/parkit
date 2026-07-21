@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: CityPageProps) {
   if (!city) return {};
   return {
     title: `Parking in ${city.name}, ${city.state} - ParkIt`,
-    description: `Find affordable parking near stadiums, arenas, and venues in ${city.name}. Rent driveways, garages, and private spots. Boat & RV parking available.`,
+    description: `Find affordable parking in ${city.name} — event parking, long-term storage, boat slips, RV pads, and more. Rent driveways, garages, and private spots from local homeowners.`,
   };
 }
 
@@ -74,6 +74,7 @@ export default async function CityPage({ params }: CityPageProps) {
             </h1>
             <p className="text-lg text-white/80 mb-8">
               Find affordable spots near every stadium, arena, and venue in{" "}
+              {city.name}. Plus long-term, boat, and RV storage.
               {city.name}, {city.state}.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">

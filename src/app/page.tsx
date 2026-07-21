@@ -55,8 +55,9 @@ export default async function HomePage() {
               Pay a Neighbor Instead.
             </h1>
             <p className="text-lg lg:text-xl text-white/80 max-w-xl mb-8 leading-relaxed">
-              Rent driveways, garages, and private spots near every stadium,
-              arena, and venue in cities across the country. Save up to 70%.
+              Rent driveways, garages, lots, boat slips, and RV pads from
+              homeowners in any city. Event parking, long-term storage, and
+              everything in between.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <CitySelector size="lg" />
@@ -78,7 +79,7 @@ export default async function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-3">How It Works</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Stress-free parking for every game, concert, and event
+              Parking made simple — whether it&apos;s for a few hours or a few months
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -88,8 +89,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Find a Spot</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Pick your city and venue. See real-time prices from homeowners
-                near every stadium and arena.
+                Browse spots by city — event parking, boat storage, RV pads,
+                long-term monthly spots, and more. Compare prices and reviews.
               </p>
             </div>
             <div className="text-center p-6 rounded-2xl border bg-card hover:shadow-lg transition-shadow">
@@ -98,8 +99,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Book & Pay</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Reserve your spot before the event. Pay securely online. No cash
-                needed on game day.
+                Reserve your spot online. Pay securely through Stripe. No cash
+                needed — whether it&apos;s for tonight&apos;s game or next month&apos;s storage.
               </p>
             </div>
             <div className="text-center p-6 rounded-2xl border bg-card hover:shadow-lg transition-shadow">
@@ -108,8 +109,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Park & Go</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Follow directions to your reserved spot. Walk or take transit to
-                the venue. Enjoy the event.
+                Follow directions to your reserved spot. Park your vehicle — car,
+                boat, or RV — and go. Enjoy the event or rest easy knowing it&apos;s stored.
               </p>
             </div>
           </div>
@@ -376,10 +377,11 @@ export default async function HomePage() {
       <section className="py-16 lg:py-20 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Stop Overpaying for Event Parking
+            Parking Shouldn&apos;t Cost a Fortune
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-8">
-            Join thousands of fans who park smarter and earn more with ParkIt.
+            Join thousands of hosts and parkers who use ParkIt to find affordable
+            parking — for events, storage, and everyday use.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <LinkButton

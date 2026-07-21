@@ -12,7 +12,8 @@ export default function AboutPage() {
       <h1 className="text-3xl font-bold mb-6">About ParkIt</h1>
       <p className="text-lg text-muted-foreground mb-8">
         ParkIt is a peer-to-peer parking marketplace that connects drivers with homeowners
-        who have unused parking spaces near stadiums, arenas, marinas, and venues nationwide.
+        who have unused parking spaces — driveways, garages, lots, boat slips, and RV pads —
+        in cities across the country.
       </p>
 
       <div className="space-y-8">
