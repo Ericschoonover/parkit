@@ -23,6 +23,10 @@ interface RecentBooking {
   startTime: string;
   endTime: string;
   totalAmount: number;
+  platformFee: number;
+  ownerPayout: number;
+  damageDeposit: number;
+  depositStatus: string;
   status: string;
   listing: {
     id: string;
@@ -30,17 +34,23 @@ interface RecentBooking {
     address: string;
     city: string;
     photos: string;
+    ownerId: string;
   };
   event: {
     name: string;
     venue: string;
   } | null;
+  renter?: {
+    name: string | null;
+  };
 }
 
 interface DashboardStats {
   totalListings: number;
   totalBookings: number;
   totalEarnings: number;
+  totalPlatformFees: number;
+  totalDepositsHeld: number;
   pendingEarnings: number;
   avgRating: number | null;
 }
@@ -106,6 +116,11 @@ export default function DashboardPage() {
     if (bookingFilter === "all") return true;
     return b.status === bookingFilter;
   });
+
+  // Transaction history: completed bookings as host
+  const transactionHistory = recentBookings.filter(
+    (b) => b.listing.ownerId === session?.user?.id && b.status === "COMPLETED"
+  );
 
   if (loading) {
     return (
@@ -234,7 +249,7 @@ export default function DashboardPage() {
               </div>
               <div className="p-3 bg-blue-50 rounded-xl">
                 <p className="text-xs text-blue-600 font-medium">Platform Fees (15%)</p>
-                <p className="text-xl font-bold text-blue-700">${(stats.totalEarnings * 0.15 / 0.85).toFixed(2)}</p>
+                <p className="text-xl font-bold text-blue-700">${(stats.totalPlatformFees || 0).toFixed(2)}</p>
               </div>
             </div>
             {Object.keys(monthlyEarnings).length > 0 && (
@@ -252,6 +267,69 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Transaction History */}
+      {transactionHistory.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Transaction History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-muted-foreground text-left">
+                    <th className="pb-2 font-medium">Date</th>
+                    <th className="pb-2 font-medium">Listing</th>
+                    <th className="pb-2 font-medium text-right">Guest</th>
+                    <th className="pb-2 font-medium text-right">Total</th>
+                    <th className="pb-2 font-medium text-right">Fee</th>
+                    <th className="pb-2 font-medium text-right">Payout</th>
+                    <th className="pb-2 font-medium text-right">Deposit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactionHistory.map((t) => (
+                    <tr key={t.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <td className="py-2.5">
+                        <Link href={`/bookings/${t.id}`} className="hover:underline">
+                          {format(new Date(t.startTime), "MMM d, yyyy")}
+                        </Link>
+                      </td>
+                      <td className="py-2.5">
+                        <p className="font-medium">{t.listing.title}</p>
+                        <p className="text-xs text-muted-foreground">{t.listing.city}</p>
+                      </td>
+                      <td className="py-2.5 text-right text-muted-foreground">
+                        {t.renter?.name || "Guest"}
+                      </td>
+                      <td className="py-2.5 text-right font-medium">${Number(t.totalAmount).toFixed(2)}</td>
+                      <td className="py-2.5 text-right text-red-600">-${Number(t.platformFee).toFixed(2)}</td>
+                      <td className="py-2.5 text-right font-semibold text-green-600">${Number(t.ownerPayout).toFixed(2)}</td>
+                      <td className="py-2.5 text-right">
+                        {Number(t.damageDeposit) > 0 ? (
+                          <Badge
+                            variant={
+                              t.depositStatus === "RELEASED" ? "default" :
+                              t.depositStatus === "CLAIMED" ? "destructive" :
+                              "secondary"
+                            }
+                            className="text-[10px]"
+                          >
+                            ${Number(t.damageDeposit).toFixed(2)} {t.depositStatus === "HELD" ? "held" : t.depositStatus === "RELEASED" ? "released" : "claimed"}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}

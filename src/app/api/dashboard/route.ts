@@ -33,15 +33,22 @@ export async function GET() {
         listing: { ownerId: userId },
         status: "COMPLETED",
       },
-      _sum: { ownerPayout: true },
+      _sum: { ownerPayout: true, platformFee: true, damageDeposit: true },
     });
+
+    const totalPlatformFees = earningsResult._sum.platformFee
+      ? Number(earningsResult._sum.platformFee)
+      : 0;
+    const totalDepositsHeld = earningsResult._sum.damageDeposit
+      ? Number(earningsResult._sum.damageDeposit)
+      : 0;
 
     const reviewsResult = await db.review.aggregate({
       where: { subjectId: userId },
       _avg: { rating: true },
     });
 
-    // Get recent bookings
+    // Get recent bookings (all, for transaction history)
     const recentBookings = await db.booking.findMany({
       where: {
         OR: [
@@ -57,6 +64,7 @@ export async function GET() {
             address: true,
             city: true,
             photos: true,
+            ownerId: true,
           },
         },
         event: {
@@ -65,9 +73,12 @@ export async function GET() {
             venue: true,
           },
         },
+        renter: {
+          select: { name: true },
+        },
       },
       orderBy: { startTime: "desc" },
-      take: 5,
+      take: 50,
     });
 
     // Get user's Stripe status
@@ -126,6 +137,8 @@ export async function GET() {
         totalEarnings: earningsResult._sum.ownerPayout
           ? Number(earningsResult._sum.ownerPayout)
           : 0,
+        totalPlatformFees,
+        totalDepositsHeld,
         pendingEarnings: pendingResult._sum.ownerPayout
           ? Number(pendingResult._sum.ownerPayout)
           : 0,
