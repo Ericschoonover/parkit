@@ -12,6 +12,7 @@ import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distanc
 import { LocationMap } from "@/components/location-map";
 import { UserDistance } from "@/components/user-distance";
 import { ReportButton } from "@/components/report-button";
+import { SeasonalPricingManager } from "@/components/seasonal-pricing-manager";
 
 export default async function ListingDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -269,6 +270,16 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
             <h2 className="text-xl font-semibold mb-2">About This Space</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
           </div>
+
+          {/* Seasonal Pricing (owner only) */}
+          {isOwner && (
+            <div className="border-t pt-4">
+              <SeasonalPricingManager
+                listingId={listing.id}
+                basePricePerHour={Number(listing.pricePerHour)}
+              />
+            </div>
+          )}
 
           {/* Nearby Events */}
           {eventsWithDistance.length > 0 && (

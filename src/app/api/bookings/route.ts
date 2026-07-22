@@ -59,7 +59,30 @@ export async function POST(request: NextRequest) {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    const parkingCost = Number(listing.pricePerHour) * hours;
+
+    // Check for seasonal pricing
+    let effectivePricePerHour = Number(listing.pricePerHour);
+    const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const bookingDay = dayNames[start.getDay()];
+
+    const seasonalPrice = await db.seasonalPrice.findFirst({
+      where: {
+        listingId,
+        startDate: { lte: end },
+        endDate: { gte: start },
+        OR: [
+          { dayOfWeek: null },
+          { dayOfWeek: bookingDay },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (seasonalPrice) {
+      effectivePricePerHour = seasonalPrice.pricePerHour;
+    }
+
+    const parkingCost = effectivePricePerHour * hours;
     const platformFee = Math.round(parkingCost * 0.15 * 100) / 100;
     const ownerPayout = parkingCost - platformFee;
     const damageDeposit = Number(listing.damageDeposit) || 50;

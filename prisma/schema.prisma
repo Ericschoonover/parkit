@@ -145,6 +145,7 @@ model Listing {
   owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   bookings Booking[]
   reports  Report[]
+  seasonalPrices SeasonalPrice[]
   cityRef  City?     @relation(fields: [cityId], references: [id])
   venue    Venue?    @relation("VenueListings", fields: [venueId], references: [id])
 
@@ -237,4 +238,19 @@ model Report {
 
   @@index([listingId])
   @@index([status])
+}
+
+model SeasonalPrice {
+  id          String   @id @default(cuid())
+  listingId   String
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  pricePerHour Float
+  dayOfWeek   String?
+  createdAt   DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
 }
