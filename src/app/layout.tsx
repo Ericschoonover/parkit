@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
+import { CookieConsent } from "@/components/cookie-consent";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Link from "next/link";
@@ -59,12 +60,13 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1">{children}</main>
             <Toaster position="top-right" richColors />
+            <CookieConsent />
             <footer className="border-t py-12 bg-muted/30">
               <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-4 gap-8 mb-8">
                   <div>
                     <p className="font-bold text-lg mb-2">
-                      <span className="text-green-600">Park</span>It
+                      <span className="text-blue-600">Park</span>It
                     </p>
                     <p className="text-sm text-muted-foreground">
                       The marketplace for personal parking spots in big cities.
@@ -95,6 +97,18 @@ export default function RootLayout({
                       <li><Link href="/safety" className="hover:text-foreground transition-colors">Safety</Link></li>
                       <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
                       <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
+                      <li><Link href="/dmca" className="hover:text-foreground transition-colors">DMCA</Link></li>
+                      <li>
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem("parkit_cookie_consent");
+                            window.location.reload();
+                          }}
+                          className="hover:text-foreground transition-colors text-left"
+                        >
+                          Cookie Settings
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </div>

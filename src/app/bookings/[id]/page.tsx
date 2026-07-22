@@ -81,6 +81,7 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
           isPast={isPast}
           damageDeposit={Number(booking.damageDeposit)}
           depositStatus={booking.depositStatus}
+          claimInitiatedAt={booking.claimInitiatedAt?.toISOString() ?? null}
         />
 
         {/* Listing Info */}
@@ -174,11 +175,15 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
                     <Badge variant={
                       booking.depositStatus === "RELEASED" ? "default" :
                       booking.depositStatus === "CLAIMED" ? "destructive" :
+                      booking.depositStatus === "DISPUTED" ? "destructive" :
+                      booking.depositStatus === "CLAIM_PENDING" ? "outline" :
                       "secondary"
                     } className="text-[10px] ml-1">
                       {booking.depositStatus === "HELD" ? "Held" :
                        booking.depositStatus === "RELEASED" ? "Refunded" :
-                       "Claimed by Host"}
+                       booking.depositStatus === "CLAIMED" ? "Claimed by Host" :
+                       booking.depositStatus === "DISPUTED" ? "Under Review" :
+                       "Claim Pending"}
                     </Badge>
                   </span>
                   <span>${Number(booking.damageDeposit).toFixed(2)}</span>
@@ -200,11 +205,14 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
 
         {/* Existing Review */}
         {booking.review && (
-          <Card className="border-amber-200">
+          <Card className={booking.review.flagged ? "border-orange-200 bg-orange-50" : "border-amber-200"}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="h-4 w-4 text-amber-500" />
                 <h3 className="font-semibold">Review</h3>
+                {booking.review.flagged && (
+                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Under Review</span>
+                )}
               </div>
               <div className="flex gap-1 mb-2">
                 {[1, 2, 3, 4, 5].map((star) => (

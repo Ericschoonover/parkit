@@ -194,6 +194,7 @@ model Booking {
   depositStatus   String   @default("HELD")
   paymentIntentId String?
   depositPaymentIntentId String?
+  claimInitiatedAt DateTime?
   beforePhotos    String        @default("[]")
   afterPhotos     String        @default("[]")
   createdAt       DateTime      @default(now())
@@ -215,6 +216,8 @@ model Review {
   subjectId String
   rating    Int
   comment   String?
+  flagged   Boolean  @default(false)
+  flagReason String?
   createdAt DateTime @default(now())
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)

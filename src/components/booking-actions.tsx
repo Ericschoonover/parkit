@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, XCircle, AlertTriangle, CheckCircle } from "lucide-react";
+import { Star, XCircle, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface BookingActionsProps {
@@ -19,6 +19,7 @@ interface BookingActionsProps {
   isPast: boolean;
   damageDeposit: number;
   depositStatus: string;
+  claimInitiatedAt?: string | null;
 }
 
 export function BookingActions({
@@ -31,6 +32,7 @@ export function BookingActions({
   isPast,
   damageDeposit,
   depositStatus,
+  claimInitiatedAt,
 }: BookingActionsProps) {
   const [cancelling, setCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -44,8 +46,20 @@ export function BookingActions({
   const canCancel = (status === "PENDING" || status === "CONFIRMED") && !isPast;
   const canReview = status === "COMPLETED" && !hasReview && isPast;
   const canManageDeposit = isOwner && isPast && depositStatus === "HELD" && (status === "COMPLETED" || status === "CONFIRMED");
+  const canConfirmClaim = isOwner && depositStatus === "CLAIM_PENDING";
+  const canDisputeClaim = isRenter && depositStatus === "CLAIM_PENDING";
   const hoursUntilStart =
     (new Date(startTime).getTime() - Date.now()) / (1000 * 60 * 60);
+
+  // Calculate time remaining in 48hr window
+  const getClaimTimeRemaining = () => {
+    if (!claimInitiatedAt) return null;
+    const hoursElapsed = (Date.now() - new Date(claimInitiatedAt).getTime()) / (1000 * 60 * 60);
+    const hoursRemaining = 48 - hoursElapsed;
+    if (hoursRemaining <= 0) return "Window closed — claim can be confirmed";
+    if (hoursRemaining < 1) return `${Math.round(hoursRemaining * 60)} minutes remaining`;
+    return `${hoursRemaining.toFixed(1)} hours remaining`;
+  };
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -67,7 +81,7 @@ export function BookingActions({
     }
   };
 
-  const handleDepositAction = async (action: "claim-deposit" | "release-deposit") => {
+  const handleDepositAction = async (action: "claim-deposit" | "release-deposit" | "confirm-claim" | "dispute-claim") => {
     setProcessingDeposit(true);
     try {
       const res = await fetch(`/api/bookings/${bookingId}`, {
@@ -77,9 +91,7 @@ export function BookingActions({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success(data.message || (action === "claim-deposit"
-        ? `Deposit of $${damageDeposit.toFixed(2)} claimed — transferred to your account`
-        : `Deposit of $${damageDeposit.toFixed(2)} refunded to guest`));
+      toast.success(data.message || "Deposit updated");
       window.location.reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to process deposit");
@@ -296,7 +308,7 @@ export function BookingActions({
         </Card>
       )}
 
-      {/* Deposit Management (host only, after booking ends) */}
+      {/* Deposit Management (host only, after booking ends, deposit HELD) */}
       {canManageDeposit && !depositAction && (
         <Card className="border-blue-200">
           <CardContent className="pt-6">
@@ -333,6 +345,7 @@ export function BookingActions({
         </Card>
       )}
 
+      {/* Deposit claim confirmation dialog */}
       {depositAction && (
         <Card className={depositAction === "claim-deposit" ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"}>
           <CardContent className="pt-6">
@@ -344,7 +357,7 @@ export function BookingActions({
                 </p>
                 <p className={`text-sm mt-1 ${depositAction === "claim-deposit" ? "text-red-700" : "text-green-700"}`}>
                   {depositAction === "claim-deposit"
-                    ? `The $${damageDeposit.toFixed(2)} deposit will be transferred to your Stripe account. The guest has been notified.`
+                    ? `A damage claim will be initiated. The guest has 48 hours to respond. If they don't respond, the $${damageDeposit.toFixed(2)} deposit will be automatically transferred to your account.`
                     : `The $${damageDeposit.toFixed(2)} deposit will be refunded to the guest's original payment method.`}
                 </p>
               </div>
@@ -366,7 +379,7 @@ export function BookingActions({
                 {processingDeposit
                   ? "Processing..."
                   : depositAction === "claim-deposit"
-                  ? "Yes, Claim Deposit"
+                  ? "Yes, Initiate Claim"
                   : "Yes, Release Deposit"}
               </Button>
             </div>
@@ -374,17 +387,101 @@ export function BookingActions({
         </Card>
       )}
 
-      {depositStatus !== "HELD" && damageDeposit > 0 && (
-        <Card className={depositStatus === "CLAIMED" ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}>
+      {/* Claim Pending — Host view (waiting for guest response or 48hr window) */}
+      {canConfirmClaim && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3 mb-3">
+              <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-800">Damage Claim Pending</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  You initiated a claim for the ${damageDeposit.toFixed(2)} deposit. The guest has been notified and has 48 hours to respond.
+                </p>
+                <p className="text-xs text-amber-600 mt-2 font-medium">
+                  {getClaimTimeRemaining()}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-green-600 border-green-200 hover:bg-green-50"
+                onClick={() => handleDepositAction("release-deposit")}
+                disabled={processingDeposit}
+              >
+                Cancel Claim & Release
+              </Button>
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700"
+                onClick={() => handleDepositAction("confirm-claim")}
+                disabled={processingDeposit || (getClaimTimeRemaining() !== null && !getClaimTimeRemaining()?.includes("closed"))}
+              >
+                Confirm Claim
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Claim Pending — Guest view (can dispute) */}
+      {canDisputeClaim && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3 mb-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-800">Deposit Claim Filed by Host</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  The host has filed a damage claim for the ${damageDeposit.toFixed(2)} deposit. You have 48 hours to respond.
+                </p>
+                <p className="text-xs text-amber-600 mt-2 font-medium">
+                  {getClaimTimeRemaining()}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDepositAction("dispute-claim")}
+                disabled={processingDeposit}
+              >
+                Dispute Claim
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Deposit status badges (final states) */}
+      {depositStatus !== "HELD" && depositStatus !== "CLAIM_PENDING" && damageDeposit > 0 && (
+        <Card className={
+          depositStatus === "CLAIMED" ? "border-red-200 bg-red-50" :
+          depositStatus === "DISPUTED" ? "border-orange-200 bg-orange-50" :
+          "border-green-200 bg-green-50"
+        }>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               {depositStatus === "CLAIMED" ? (
                 <XCircle className="h-5 w-5 text-red-600" />
+              ) : depositStatus === "DISPUTED" ? (
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
               ) : (
                 <CheckCircle className="h-5 w-5 text-green-600" />
               )}
-              <p className={`font-medium text-sm ${depositStatus === "CLAIMED" ? "text-red-800" : "text-green-800"}`}>
-                Deposit of ${damageDeposit.toFixed(2)} {depositStatus === "CLAIMED" ? "claimed by host" : "refunded to guest"}
+              <p className={`font-medium text-sm ${
+                depositStatus === "CLAIMED" ? "text-red-800" :
+                depositStatus === "DISPUTED" ? "text-orange-800" :
+                "text-green-800"
+              }`}>
+                {depositStatus === "CLAIMED"
+                  ? `Deposit of $${damageDeposit.toFixed(2)} claimed by host`
+                  : depositStatus === "DISPUTED"
+                  ? `Deposit of $${damageDeposit.toFixed(2)} under review by ParkIt`
+                  : `Deposit of $${damageDeposit.toFixed(2)} refunded to guest`}
               </p>
             </div>
           </CardContent>

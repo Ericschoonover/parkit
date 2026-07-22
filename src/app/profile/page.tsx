@@ -12,6 +12,7 @@ import { User, Search, Store, ArrowRightLeft, Shield, Star, MapPin, Calendar, Ca
 import { toast } from "sonner";
 import Link from "next/link";
 import { format } from "date-fns";
+import { FlagReview } from "@/components/flag-review";
 
 interface ProfileData {
   user: {
@@ -47,6 +48,8 @@ interface ProfileData {
     id: string;
     rating: number;
     comment: string | null;
+    flagged: boolean;
+    flagReason: string | null;
     createdAt: string;
     author: { name: string | null; image: string | null };
     booking: { id: string };
@@ -55,6 +58,8 @@ interface ProfileData {
     id: string;
     rating: number;
     comment: string | null;
+    flagged: boolean;
+    flagReason: string | null;
     createdAt: string;
     subject: { name: string | null; image: string | null };
     booking: { id: string; listing: { title: string } };
@@ -378,7 +383,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   profileData.reviewsReceived.map((review) => (
-                    <div key={review.id} className="p-3 border rounded-xl">
+                    <div key={review.id} className={`p-3 border rounded-xl ${review.flagged ? "bg-orange-50 border-orange-200" : ""}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center overflow-hidden">
@@ -389,20 +394,26 @@ export default function ProfilePage() {
                             )}
                           </div>
                           <span className="text-sm font-medium">{review.author.name || "Anonymous"}</span>
+                          {review.flagged && (
+                            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Under Review</span>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground">
                           {format(new Date(review.createdAt), "MMM d, yyyy")}
                         </span>
                       </div>
-                      <div className="flex gap-0.5 mb-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-4 w-4 ${
-                              star <= review.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
-                            }`}
-                          />
-                        ))}
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= review.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <FlagReview reviewId={review.id} isFlagged={review.flagged} />
                       </div>
                       {review.comment && (
                         <p className="text-sm text-muted-foreground mt-1">{review.comment}</p>

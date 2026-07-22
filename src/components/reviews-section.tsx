@@ -7,11 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { FlagReview } from "@/components/flag-review";
 
 interface Review {
   id: string;
   rating: number;
   comment: string | null;
+  flagged: boolean;
+  flagReason: string | null;
   createdAt: string;
   author: {
     name: string | null;
@@ -57,10 +60,13 @@ export function ReviewsSection({ listingId, reviews }: ReviewsSectionProps) {
     }
   };
 
+  // Filter out flagged reviews from public view (show to admin/subject only)
+  const visibleReviews = reviews.filter((r) => !r.flagged);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Reviews ({reviews.length})</h2>
+        <h2 className="text-xl font-semibold">Reviews ({visibleReviews.length})</h2>
         {session && (
           <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
             Write a Review
@@ -113,10 +119,10 @@ export function ReviewsSection({ listingId, reviews }: ReviewsSectionProps) {
       )}
 
       <div className="space-y-4">
-        {reviews.length === 0 ? (
+        {visibleReviews.length === 0 ? (
           <p className="text-muted-foreground">No reviews yet. Be the first to review!</p>
         ) : (
-          reviews.map((review) => (
+          visibleReviews.map((review) => (
             <Card key={review.id}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
@@ -141,17 +147,22 @@ export function ReviewsSection({ listingId, reviews }: ReviewsSectionProps) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`h-4 w-4 ${
-                          star <= review.rating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-4 w-4 ${
+                            star <= review.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {session?.user && (
+                      <FlagReview reviewId={review.id} isFlagged={review.flagged} />
+                    )}
                   </div>
                 </div>
                 {review.comment && (

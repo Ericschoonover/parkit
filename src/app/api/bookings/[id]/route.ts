@@ -67,7 +67,8 @@ export async function PATCH(
       // Process Stripe refund for parking payment
       if (booking.paymentIntentId && refundPercent > 0) {
         try {
-          const refundAmount = Math.round((booking.totalAmount - booking.damageDeposit) * refundPercent / 100 * 100);
+          const parkingAmount = Number(booking.ownerPayout) / 0.85; // reverse the 15% fee to get gross parking amount
+          const refundAmount = Math.round(parkingAmount * refundPercent / 100 * 100);
           await stripe.refunds.create({
             payment_intent: booking.paymentIntentId,
             amount: refundAmount,
@@ -113,7 +114,7 @@ export async function PATCH(
       });
     }
 
-    // Handle deposit claim (host reports damage)
+    // Handle deposit claim initiation (host reports damage)
     if (action === "claim-deposit") {
       if (!isOwner) {
         return Response.json({ error: "Only the host can claim the deposit" }, { status: 403 });
@@ -122,13 +123,63 @@ export async function PATCH(
         return Response.json({ error: "Deposit is not available to claim" }, { status: 400 });
       }
 
-      // Transfer deposit from platform to host's connected account
-      const listing = await db.listing.findUnique({
-        where: { id: booking.listingId },
-        select: { ownerId: true },
+      // Set claim pending with 48hr window
+      const updated = await db.booking.update({
+        where: { id },
+        data: {
+          depositStatus: "CLAIM_PENDING",
+          claimInitiatedAt: new Date(),
+        },
       });
+
+      return Response.json({
+        booking: updated,
+        message: `Deposit claim initiated. The guest has 48 hours to respond. If no response, the $${booking.damageDeposit.toFixed(2)} deposit will be automatically transferred to your account.`,
+      });
+    }
+
+    // Handle guest disputing a deposit claim
+    if (action === "dispute-claim") {
+      if (!isRenter) {
+        return Response.json({ error: "Only the guest can dispute a deposit claim" }, { status: 403 });
+      }
+      if (booking.depositStatus !== "CLAIM_PENDING") {
+        return Response.json({ error: "No pending claim to dispute" }, { status: 400 });
+      }
+
+      const updated = await db.booking.update({
+        where: { id },
+        data: { depositStatus: "DISPUTED" },
+      });
+
+      return Response.json({
+        booking: updated,
+        message: "Deposit claim disputed. ParkIt will review the evidence from both parties and issue a decision within 5 business days.",
+      });
+    }
+
+    // Handle host confirming claim after 48hr window (or auto-claim if no dispute)
+    if (action === "confirm-claim") {
+      if (!isOwner) {
+        return Response.json({ error: "Only the host can confirm the claim" }, { status: 403 });
+      }
+      if (booking.depositStatus !== "CLAIM_PENDING") {
+        return Response.json({ error: "No pending claim to confirm" }, { status: 400 });
+      }
+
+      // Check 48hr window has passed
+      if (booking.claimInitiatedAt) {
+        const hoursSinceClaim = (Date.now() - new Date(booking.claimInitiatedAt).getTime()) / (1000 * 60 * 60);
+        if (hoursSinceClaim < 48) {
+          return Response.json({
+            error: `The guest still has ${(48 - hoursSinceClaim).toFixed(1)} hours to respond. You can confirm the claim after the 48-hour window.`,
+          }, { status: 400 });
+        }
+      }
+
+      // Transfer deposit from platform to host's connected account
       const host = await db.user.findUnique({
-        where: { id: listing!.ownerId },
+        where: { id: booking.listing.ownerId },
         select: { stripeAccountId: true },
       });
 
@@ -168,7 +219,7 @@ export async function PATCH(
       if (!isOwner) {
         return Response.json({ error: "Only the host can release the deposit" }, { status: 403 });
       }
-      if (booking.depositStatus !== "HELD") {
+      if (booking.depositStatus !== "HELD" && booking.depositStatus !== "CLAIM_PENDING") {
         return Response.json({ error: "Deposit is not available to release" }, { status: 400 });
       }
 
