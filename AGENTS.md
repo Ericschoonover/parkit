@@ -78,10 +78,27 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 5. After booking ends, both parties can leave reviews
 
 ### Cancellation Policy (enforced in code)
-- Host cancels → full refund
-- Guest cancels 24+ hrs before → full refund
-- Guest cancels <24 hrs before → 50% refund
-- No-show → no refund
+- Host cancels → full refund (parking + deposit)
+- Guest cancels 24+ hrs before → full refund (parking + deposit)
+- Guest cancels <24 hrs before → 50% parking refund + full deposit refund
+- No-show → no parking refund, deposit refunded
+
+### Damage Deposit Flow
+- Two PaymentIntents per booking: parking (transferred to host via Connect) + deposit (held on platform)
+- Default $50, configurable per listing (0-500)
+- After booking ends: host can CLAIM deposit (transferred to their Stripe account) or RELEASE deposit (refunded to guest)
+- Cancellation always refunds the deposit if still held
+
+### Seasonal Pricing
+- Hosts set price rules with date ranges, optional day-of-week targeting
+- Presets: Weekend Premium (+20%), Holiday Surge (+50%), Weekday Discount (-15%)
+- Booking creation checks for matching seasonal rules and uses adjusted price
+- Overlapping rules prevented server-side
+
+### Report/Flag System
+- Users report listings with predefined reasons (fraudulent, dangerous, misleading, etc.)
+- Hosts see reports on their listings and can mark as REVIEWED or DISMISSED
+- One report per user per listing (prevents duplicates)
 
 ### Photo Documentation
 - Booking photos: before (renter only) + after (both), stored as base64 data URLs
@@ -115,18 +132,18 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 - [x] Host earnings dashboard (total earned, pending, monthly breakdown, upcoming bookings)
 - [x] About page
 - [x] Safety page
-- [x] Open Graph + Twitter card metadata for link previews
+- [x] Open Graph + Twitter card metadata for link previewss
 - [x] Nationwide copy (not just event parking)
+- [x] Damage deposit system — two PaymentIntents (parking to host via Connect + refundable deposit held on platform). Host can claim (transfer to their account) or release (refund to guest) after booking ends
+- [x] Report/flag listings — users can report with reason + description; hosts see reports on their listings
+- [x] Host payout dashboard — transaction history table with date, listing, guest, total, fee, payout, deposit status; platform fees tracking
+- [x] Seasonal pricing tools — hosts set date-range price rules with day-of-week targeting (weekdays/weekends/specific days) and quick presets (Weekend Premium, Holiday Surge, Weekday Discount)
 
 ## What's Remaining / Nice-to-Have
 - [ ] Email notifications (booking confirmed, reminder, review request, payout) — Resend free tier
-- [ ] Host payout dashboard with detailed transaction history
-- [ ] Report/flag listing functionality
 - [ ] Host cancellation penalties (account-level)
-- [ ] Damage deposit hold implementation (currently in ToS, not in payment flow)
 - [ ] 1099 tax reporting for hosts earning $600+/year
 - [ ] Mobile app (React Native)
-- [ ] Seasonal pricing tools for hosts
 - [ ] Instant booking option
 - [ ] Messaging between hosts and guests
 
