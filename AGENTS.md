@@ -86,8 +86,12 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 ### Damage Deposit Flow
 - Two PaymentIntents per booking: parking (transferred to host via Connect) + deposit (held on platform)
 - Default $50, configurable per listing (0-500)
-- After booking ends: host can CLAIM deposit (transferred to their Stripe account) or RELEASE deposit (refunded to guest)
+- After booking ends: host can INITIATE CLAIM (sets CLAIM_PENDING, 48hr guest response window)
+- Guest can DISPUTE claim within 48hr → status becomes DISPUTED, ParkIt reviews
+- If no dispute in 48hr: host confirms claim → deposit transferred to their Stripe account
+- Host can also RELEASE deposit at any time (refunded to guest)
 - Cancellation always refunds the deposit if still held
+- Deposit states: HELD → CLAIM_PENDING → CLAIMED | RELEASED | DISPUTED
 
 ### Seasonal Pricing
 - Hosts set price rules with date ranges, optional day-of-week targeting
@@ -111,8 +115,9 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 ## What's Built
 - [x] Google OAuth with trustHost
 - [x] Domain park-it.net configured (Cloudflare → Vercel)
-- [x] Terms of Service (escrow, deposits, photos, disputes, insurance, liability)
-- [x] Privacy Policy
+- [x] Terms of Service (escrow accuracy, class action waiver, binding arbitration, 1099-K, force majeure, hold harmless, DMCA)
+- [x] Privacy Policy (CCPA Do Not Sell, cookie categories, data retention, account deletion, photo storage)
+- [x] DMCA takedown policy page
 - [x] 501 cities seeded (local + Turso)
 - [x] Free-text city input with autocomplete (any town in the US)
 - [x] Interactive Mapbox maps (event maps with booked badges, user location, listing detail maps)
@@ -134,15 +139,16 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 - [x] Safety page
 - [x] Open Graph + Twitter card metadata for link previewss
 - [x] Nationwide copy (not just event parking)
-- [x] Damage deposit system — two PaymentIntents (parking to host via Connect + refundable deposit held on platform). Host can claim (transfer to their account) or release (refund to guest) after booking ends
+- [x] Damage deposit system — two PaymentIntents with dispute flow (48hr guest response window, CLAIM_PENDING/DISPUTED states, host confirm or guest dispute)
 - [x] Report/flag listings — users can report with reason + description; hosts see reports on their listings
+- [x] Review moderation — flag reviews with reason, hidden from public view while under review
+- [x] Cookie consent banner — Essential/Functional/Analytics toggle, saved to localStorage
 - [x] Host payout dashboard — transaction history table with date, listing, guest, total, fee, payout, deposit status; platform fees tracking
 - [x] Seasonal pricing tools — hosts set date-range price rules with day-of-week targeting (weekdays/weekends/specific days) and quick presets (Weekend Premium, Holiday Surge, Weekday Discount)
 
 ## What's Remaining / Nice-to-Have
 - [ ] Email notifications (booking confirmed, reminder, review request, payout) — Resend free tier
 - [ ] Host cancellation penalties (account-level)
-- [ ] 1099 tax reporting for hosts earning $600+/year
 - [ ] Mobile app (React Native)
 - [ ] Instant booking option
 - [ ] Messaging between hosts and guests
