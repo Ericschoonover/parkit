@@ -58,6 +58,7 @@ model User {
   bookings          Booking[]    @relation("RenterBookings")
   reviewsGiven      Review[]     @relation("ReviewAuthor")
   reviewsReceived   Review[]     @relation("ReviewSubject")
+  reportsFiled      Report[]     @relation("ReportAuthor")
   accounts          Account[]
   sessions          Session[]
 }
@@ -143,6 +144,7 @@ model Listing {
 
   owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   bookings Booking[]
+  reports  Report[]
   cityRef  City?     @relation(fields: [cityId], references: [id])
   venue    Venue?    @relation("VenueListings", fields: [venueId], references: [id])
 
@@ -219,4 +221,20 @@ model Review {
   subject User    @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([subjectId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  listingId   String
+  reporterId  String
+  reason      String
+  description String?
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reporter User    @relation("ReportAuthor", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([status])
 }

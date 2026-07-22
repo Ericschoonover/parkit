@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { ReviewsSection } from "@/components/reviews-section";
 import { haversineDistance, formatDistance, formatWalkTime } from "@/lib/distance";
 import { LocationMap } from "@/components/location-map";
 import { UserDistance } from "@/components/user-distance";
+import { ReportButton } from "@/components/report-button";
 
 export default async function ListingDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -26,6 +28,10 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
   if (!listing) {
     notFound();
   }
+
+  const session = await auth();
+  const currentUserId = session?.user?.id;
+  const isOwner = currentUserId === listing.ownerId;
 
   // Get reviews through bookings
   const reviews = await db.review.findMany({
@@ -307,6 +313,13 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
               createdAt: r.createdAt.toISOString(),
             }))}
           />
+
+          {/* Report (non-owners only) */}
+          {!isOwner && currentUserId && (
+            <div className="border-t pt-4">
+              <ReportButton listingId={listing.id} listingTitle={listing.title} />
+            </div>
+          )}
         </div>
 
         {/* Sidebar - Booking Form */}
