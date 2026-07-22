@@ -125,7 +125,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold text-foreground">11. Damage Deposit</h2>
           <p>To protect both Hosts and Guests, ParkIt collects a refundable damage deposit for each booking.</p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
-            <li>The deposit amount is set by the Host and displayed before the Guest confirms the booking (default: $50, maximum: $500)</li>
+            <li>The deposit amount is set by the Host and displayed before the Guest confirms the booking (default: $0, maximum: $500). Hosts are encouraged to set a deposit proportional to their listing price</li>
             <li>The deposit is charged at the time of booking and held on ParkIt&apos;s platform</li>
             <li><strong>After the booking ends, the deposit is automatically refunded to the Guest within 24 hours</strong> unless the Host initiates a damage claim</li>
             <li>If a Host initiates a damage claim (see Section 13), the deposit is held until the claim is resolved through the dispute resolution process</li>

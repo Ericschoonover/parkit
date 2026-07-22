@@ -120,7 +120,7 @@ model Listing {
   lit             Boolean  @default(false)
   evCharging      Boolean  @default(false)
   accessible      Boolean  @default(false)
-  damageDeposit   Float    @default(50)
+  damageDeposit   Float    @default(0)
   photos          String   @default("[]")
   active          Boolean  @default(true)
   parkingType     String   @default("EVENT")

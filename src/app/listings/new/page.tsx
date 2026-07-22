@@ -109,7 +109,7 @@ function NewListingForm() {
     maxClearance: "",
     securityCamera: false,
     accessInstructions: "",
-    damageDeposit: "50",
+    damageDeposit: "0",
     hasInsurance: false,
   });
 
@@ -799,9 +799,9 @@ function NewListingForm() {
 
             {/* Damage Deposit */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Damage Deposit</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-foreground">Damage Deposit</h3>
               <p className="text-sm text-muted-foreground">
-                A refundable deposit is held from guests until their booking ends. Released if no damage is reported.
+                A refundable deposit is held from guests until their booking ends. Released automatically if no damage is reported within 48 hours.
               </p>
               <div>
                 <Label htmlFor="damageDeposit">Deposit Amount ($)</Label>
@@ -811,11 +811,23 @@ function NewListingForm() {
                   step="5"
                   min="0"
                   max="500"
-                  placeholder="50"
+                  placeholder="0"
                   value={formData.damageDeposit}
                   onChange={(e) => setFormData({ ...formData, damageDeposit: e.target.value })}
                   className="mt-1.5 w-40"
                 />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {(() => {
+                    const price = parseFloat(formData.pricePerHour || formData.pricePerDay || formData.pricePerMonth || "0");
+                    if (price <= 0) return "Set a price above to see a recommended deposit.";
+                    if (price <= 15) return `Recommended: $0–$10 for a $${price.toFixed(2)} listing. A high deposit may deter guests.`;
+                    if (price <= 50) return `Recommended: $10–$25 for a $${price.toFixed(2)} listing.`;
+                    return `Recommended: $25–$50 for a $${price.toFixed(2)} listing.`;
+                  })()}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Set to $0 if you don&apos;t require a deposit. Maximum: $500.
+                </p>
               </div>
             </div>
 
