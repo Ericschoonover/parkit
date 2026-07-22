@@ -1,0 +1,4 @@
+ALTER TABLE "Listing" ADD COLUMN "damageDeposit" REAL NOT NULL DEFAULT 50;
+ALTER TABLE "Booking" ADD COLUMN "damageDeposit" REAL NOT NULL DEFAULT 0;
+ALTER TABLE "Booking" ADD COLUMN "depositStatus" TEXT NOT NULL DEFAULT 'HELD';
+ALTER TABLE "Booking" ADD COLUMN "depositPaymentIntentId" TEXT;

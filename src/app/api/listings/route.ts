@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
       maxClearance,
       securityCamera,
       accessInstructions,
+      damageDeposit,
     } = body;
 
     if (!title || !description || !address || !city || !state || !zipCode) {
@@ -257,6 +258,7 @@ export async function POST(request: NextRequest) {
         maxClearance: maxClearance ? parseFloat(maxClearance) : null,
         securityCamera: securityCamera || false,
         accessInstructions: accessInstructions || null,
+        damageDeposit: damageDeposit != null ? parseFloat(damageDeposit) : 50,
       },
     });
 

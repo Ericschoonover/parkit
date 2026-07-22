@@ -119,6 +119,7 @@ model Listing {
   lit             Boolean  @default(false)
   evCharging      Boolean  @default(false)
   accessible      Boolean  @default(false)
+  damageDeposit   Float    @default(50)
   photos          String   @default("[]")
   active          Boolean  @default(true)
   parkingType     String   @default("EVENT")
@@ -186,7 +187,10 @@ model Booking {
   totalAmount     Float
   platformFee     Float
   ownerPayout     Float
+  damageDeposit   Float    @default(0)
+  depositStatus   String   @default("HELD")
   paymentIntentId String?
+  depositPaymentIntentId String?
   beforePhotos    String        @default("[]")
   afterPhotos     String        @default("[]")
   createdAt       DateTime      @default(now())

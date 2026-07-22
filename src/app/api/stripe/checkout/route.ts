@@ -49,14 +49,15 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Host has not connected payments yet" }, { status: 400 });
     }
 
-    // Create a PaymentIntent with application fee
-    const totalAmountCents = Math.round(booking.totalAmount * 100);
-    const platformFeeCents = Math.round(booking.platformFee * 100);
+    // Two PaymentIntents: parking (to host) + deposit (stays on platform)
+    const parkingCents = Math.round((booking.totalAmount - booking.damageDeposit) * 100);
+    const feeCents = Math.round(booking.platformFee * 100);
+    const depositCents = Math.round(booking.damageDeposit * 100);
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmountCents,
+    const parkingIntent = await stripe.paymentIntents.create({
+      amount: parkingCents,
       currency: "usd",
-      application_fee_amount: platformFeeCents,
+      application_fee_amount: feeCents,
       transfer_data: {
         destination: host.stripeAccountId,
       },
@@ -64,17 +65,33 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         listingId: booking.listingId,
         renterId: session.user.id,
+        type: "parking",
       },
     });
 
-    // Save the paymentIntentId to the booking
+    const depositIntent = await stripe.paymentIntents.create({
+      amount: depositCents,
+      currency: "usd",
+      metadata: {
+        bookingId: booking.id,
+        listingId: booking.listingId,
+        renterId: session.user.id,
+        type: "deposit",
+      },
+    });
+
+    // Save both paymentIntentIds
     await db.booking.update({
       where: { id: bookingId },
-      data: { paymentIntentId: paymentIntent.id },
+      data: {
+        paymentIntentId: parkingIntent.id,
+        depositPaymentIntentId: depositIntent.id,
+      },
     });
 
     return Response.json({
-      clientSecret: paymentIntent.client_secret,
+      clientSecret: parkingIntent.client_secret,
+      depositClientSecret: depositIntent.client_secret,
       publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     });
   } catch (error) {

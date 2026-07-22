@@ -38,9 +38,10 @@ interface ExistingBooking {
 interface BookingFormProps {
   listingId: string;
   pricePerHour: number;
+  damageDeposit: number;
 }
 
-export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
+export function BookingForm({ listingId, pricePerHour, damageDeposit }: BookingFormProps) {
   const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState("18:00");
@@ -49,6 +50,7 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
   const [existingBookings, setExistingBookings] = useState<ExistingBooking[]>([]);
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [depositClientSecret, setDepositClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
@@ -70,7 +72,7 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
   const hoursNum = parseInt(hours);
   const parkingCost = pricePerHour * hoursNum;
   const platformFee = Math.round(parkingCost * 0.15 * 100) / 100;
-  const totalAmount = parkingCost + platformFee;
+  const totalAmount = parkingCost + platformFee + damageDeposit;
 
   const bookedDates = existingBookings.map((b) => ({
     start: new Date(b.startTime),
@@ -127,6 +129,7 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
       // Show Stripe payment form
       setBookingId(data.booking.id);
       setClientSecret(data.clientSecret);
+      setDepositClientSecret(data.depositClientSecret);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Booking failed");
     } finally {
@@ -142,18 +145,38 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
           <p className="text-xs font-semibold text-blue-800 flex items-center gap-1">
             <CreditCard className="h-3 w-3" /> Complete Payment
           </p>
-          <p className="text-xs text-blue-600 mt-1">
-            Enter your card details below to confirm your booking.
+          <p className="text-xs text-muted-foreground mt-1">
+            Enter your card details below to confirm your booking. Two charges will appear: parking (${(parkingCost + platformFee).toFixed(2)}) and a refundable deposit (${damageDeposit.toFixed(2)}).
           </p>
         </div>
 
-        <div className="border rounded-lg p-4">
-          <EmbeddedCheckoutProvider
-            stripe={stripePromise}
-            options={{ clientSecret }}
-          >
-            <EmbeddedCheckout />
-          </EmbeddedCheckoutProvider>
+        <div className="border rounded-lg p-4 space-y-4">
+          <div>
+            <p className="text-sm font-medium mb-2">Parking Fee — ${(parkingCost + platformFee).toFixed(2)}</p>
+            <EmbeddedCheckoutProvider
+              stripe={stripePromise}
+              options={{ clientSecret }}
+            >
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </div>
+
+          {depositClientSecret && (
+            <>
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium mb-2">Refundable Deposit — ${damageDeposit.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Held until your booking ends. Refunded if no damage is reported.
+                </p>
+                <EmbeddedCheckoutProvider
+                  stripe={stripePromise}
+                  options={{ clientSecret: depositClientSecret }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              </div>
+            </>
+          )}
         </div>
 
         <Button
@@ -161,6 +184,7 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
           className="w-full"
           onClick={() => {
             setClientSecret(null);
+            setDepositClientSecret(null);
             setBookingId(null);
           }}
         >
@@ -274,6 +298,10 @@ export function BookingForm({ listingId, pricePerHour }: BookingFormProps) {
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Service fee (15%)</span>
           <span>${platformFee.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Refundable deposit</span>
+          <span>${damageDeposit.toFixed(2)}</span>
         </div>
         <div className="flex justify-between font-semibold border-t pt-2 text-base">
           <span>Total</span>

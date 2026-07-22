@@ -109,6 +109,7 @@ function NewListingForm() {
     maxClearance: "",
     securityCamera: false,
     accessInstructions: "",
+    damageDeposit: "50",
     hasInsurance: false,
   });
 
@@ -156,6 +157,7 @@ function NewListingForm() {
           pricePerDay: formData.pricePerDay || undefined,
           pricePerWeek: formData.pricePerWeek || undefined,
           pricePerMonth: formData.pricePerMonth || undefined,
+          damageDeposit: parseFloat(formData.damageDeposit) || 50,
           capacity: parseInt(formData.capacity),
           photos,
           lat: 0,
@@ -789,6 +791,28 @@ function NewListingForm() {
                   onChange={(e) => setFormData({ ...formData, accessInstructions: e.target.value })}
                   className="mt-1.5"
                   rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Damage Deposit */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Damage Deposit</h3>
+              <p className="text-sm text-muted-foreground">
+                A refundable deposit is held from guests until their booking ends. Released if no damage is reported.
+              </p>
+              <div>
+                <Label htmlFor="damageDeposit">Deposit Amount ($)</Label>
+                <Input
+                  id="damageDeposit"
+                  type="number"
+                  step="5"
+                  min="0"
+                  max="500"
+                  placeholder="50"
+                  value={formData.damageDeposit}
+                  onChange={(e) => setFormData({ ...formData, damageDeposit: e.target.value })}
+                  className="mt-1.5 w-40"
                 />
               </div>
             </div>

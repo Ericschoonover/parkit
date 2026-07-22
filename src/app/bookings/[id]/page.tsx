@@ -79,6 +79,8 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
           isRenter={isRenter}
           hasReview={!!booking.review}
           isPast={isPast}
+          damageDeposit={Number(booking.damageDeposit)}
+          depositStatus={booking.depositStatus}
         />
 
         {/* Listing Info */}
@@ -155,9 +157,36 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
           <CardContent className="pt-6">
             <h3 className="font-semibold mb-4">Payment</h3>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Total Amount</span>
-                <span className="font-bold">${Number(booking.totalAmount).toFixed(2)}</span>
+              {Number(booking.damageDeposit) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Parking</span>
+                  <span>${(Number(booking.totalAmount) - Number(booking.damageDeposit)).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span>Service fee (15%)</span>
+                <span>${Number(booking.platformFee).toFixed(2)}</span>
+              </div>
+              {Number(booking.damageDeposit) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-1">
+                    Refundable deposit
+                    <Badge variant={
+                      booking.depositStatus === "RELEASED" ? "default" :
+                      booking.depositStatus === "CLAIMED" ? "destructive" :
+                      "secondary"
+                    } className="text-[10px] ml-1">
+                      {booking.depositStatus === "HELD" ? "Held" :
+                       booking.depositStatus === "RELEASED" ? "Refunded" :
+                       "Claimed by Host"}
+                    </Badge>
+                  </span>
+                  <span>${Number(booking.damageDeposit).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-semibold border-t pt-2">
+                <span>Total Paid</span>
+                <span>${Number(booking.totalAmount).toFixed(2)}</span>
               </div>
               {isOwner && (
                 <div className="flex justify-between text-sm text-muted-foreground">

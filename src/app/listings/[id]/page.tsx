@@ -331,7 +331,12 @@ export default async function ListingDetailPage(props: { params: Promise<{ id: s
                   </>
                 )}
               </div>
-              <BookingForm listingId={listing.id} pricePerHour={Number(listing.pricePerHour)} />
+              <BookingForm listingId={listing.id} pricePerHour={Number(listing.pricePerHour)} damageDeposit={Number(listing.damageDeposit)} />
+              {Number(listing.damageDeposit) > 0 && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Includes a ${Number(listing.damageDeposit).toFixed(2)} refundable damage deposit
+                </p>
+              )}
               <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1">
                 <Shield className="h-4 w-4" />
                 Secure payment via Stripe

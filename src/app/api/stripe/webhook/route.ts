@@ -29,13 +29,20 @@ export async function POST(request: NextRequest) {
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const bookingId = paymentIntent.metadata.bookingId;
+        const paymentType = paymentIntent.metadata.type;
 
         if (bookingId) {
-          await db.booking.update({
-            where: { id: bookingId },
-            data: { status: "CONFIRMED" },
-          });
-          console.log(`Booking ${bookingId} confirmed via payment`);
+          if (paymentType === "deposit") {
+            // Deposit payment succeeded — deposit is now held on platform
+            console.log(`Deposit for booking ${bookingId} received and held on platform`);
+          } else {
+            // Parking payment succeeded — confirm booking
+            await db.booking.update({
+              where: { id: bookingId },
+              data: { status: "CONFIRMED" },
+            });
+            console.log(`Booking ${bookingId} confirmed via parking payment`);
+          }
         }
         break;
       }
@@ -43,13 +50,15 @@ export async function POST(request: NextRequest) {
       case "payment_intent.payment_failed": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const bookingId = paymentIntent.metadata.bookingId;
+        const paymentType = paymentIntent.metadata.type;
 
-        if (bookingId) {
+        if (bookingId && paymentType !== "deposit") {
+          // Only cancel on parking payment failure, not deposit failure
           await db.booking.update({
             where: { id: bookingId },
             data: { status: "CANCELLED" },
           });
-          console.log(`Booking ${bookingId} cancelled due to payment failure`);
+          console.log(`Booking ${bookingId} cancelled due to parking payment failure`);
         }
         break;
       }
@@ -71,13 +80,22 @@ export async function POST(request: NextRequest) {
       case "charge.refunded": {
         const charge = event.data.object as Stripe.Charge;
         const bookingId = charge.metadata?.bookingId;
+        const paymentType = charge.metadata?.type;
 
-        if (bookingId) {
+        if (bookingId && paymentType !== "deposit") {
+          // Only update booking status on parking refund, not deposit refund
           await db.booking.update({
             where: { id: bookingId },
             data: { status: "CANCELLED" },
           });
           console.log(`Booking ${bookingId} refunded`);
+        } else if (bookingId && paymentType === "deposit") {
+          // Deposit refunded to guest — mark as released
+          await db.booking.update({
+            where: { id: bookingId },
+            data: { depositStatus: "REFUNDED" },
+          });
+          console.log(`Deposit for booking ${bookingId} refunded to guest`);
         }
         break;
       }

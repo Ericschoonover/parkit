@@ -59,9 +59,11 @@ export async function POST(request: NextRequest) {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    const totalAmount = Number(listing.pricePerHour) * hours;
-    const platformFee = Math.round(totalAmount * 0.15 * 100) / 100;
-    const ownerPayout = totalAmount - platformFee;
+    const parkingCost = Number(listing.pricePerHour) * hours;
+    const platformFee = Math.round(parkingCost * 0.15 * 100) / 100;
+    const ownerPayout = parkingCost - platformFee;
+    const damageDeposit = Number(listing.damageDeposit) || 50;
+    const totalAmount = parkingCost + platformFee + damageDeposit;
 
     // Create booking as PENDING
     const booking = await db.booking.create({
@@ -74,18 +76,22 @@ export async function POST(request: NextRequest) {
         totalAmount,
         platformFee,
         ownerPayout,
+        damageDeposit,
         status: "PENDING",
       },
     });
 
-    // Create Stripe PaymentIntent
-    const totalAmountCents = Math.round(totalAmount * 100);
-    const platformFeeCents = Math.round(platformFee * 100);
+    // Create two PaymentIntents:
+    // 1) Parking — transferred to host via Connect
+    // 2) Deposit — stays on platform (refundable/transferable later)
+    const parkingCents = Math.round(parkingCost * 100);
+    const feeCents = Math.round(platformFee * 100);
+    const depositCents = Math.round(damageDeposit * 100);
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmountCents,
+    const parkingIntent = await stripe.paymentIntents.create({
+      amount: parkingCents,
       currency: "usd",
-      application_fee_amount: platformFeeCents,
+      application_fee_amount: feeCents,
       transfer_data: {
         destination: listing.owner.stripeAccountId,
       },
@@ -93,18 +99,34 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         listingId: listing.id,
         renterId: session.user.id,
+        type: "parking",
       },
     });
 
-    // Save paymentIntentId
+    const depositIntent = await stripe.paymentIntents.create({
+      amount: depositCents,
+      currency: "usd",
+      metadata: {
+        bookingId: booking.id,
+        listingId: listing.id,
+        renterId: session.user.id,
+        type: "deposit",
+      },
+    });
+
+    // Save both paymentIntentIds
     await db.booking.update({
       where: { id: booking.id },
-      data: { paymentIntentId: paymentIntent.id },
+      data: {
+        paymentIntentId: parkingIntent.id,
+        depositPaymentIntentId: depositIntent.id,
+      },
     });
 
     return Response.json({
       booking,
-      clientSecret: paymentIntent.client_secret,
+      clientSecret: parkingIntent.client_secret,
+      depositClientSecret: depositIntent.client_secret,
     }, { status: 201 });
   } catch (error) {
     console.error("Booking error:", error);
