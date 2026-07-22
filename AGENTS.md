@@ -115,7 +115,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 ## What's Built
 - [x] Google OAuth with trustHost
 - [x] Domain park-it.net configured (Cloudflare → Vercel)
-- [x] Terms of Service (escrow accuracy, class action waiver, binding arbitration, 1099-K, force majeure, hold harmless, DMCA)
+- [x] Terms of Service (escrow accuracy, class action waiver, binding arbitration, 1099-K, force majeure, hold harmless, DMCA, as-is disclaimer, no employment, user disputes)
 - [x] Privacy Policy (CCPA Do Not Sell, cookie categories, data retention, account deletion, photo storage)
 - [x] DMCA takedown policy page
 - [x] 501 cities seeded (local + Turso)
