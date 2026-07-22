@@ -85,7 +85,8 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 
 ### Damage Deposit Flow
 - Two PaymentIntents per booking: parking (transferred to host via Connect) + deposit (held on platform)
-- Default $50, configurable per listing (0-500)
+- Default $0 (no deposit required), configurable per listing (0-500)
+- Smart recommendations: $0-10 for cheap listings, $10-25 for mid-range, $25-50 for premium
 - After booking ends: host can INITIATE CLAIM (sets CLAIM_PENDING, 48hr guest response window)
 - Guest can DISPUTE claim within 48hr → status becomes DISPUTED, ParkIt reviews
 - If no dispute in 48hr: host confirms claim → deposit transferred to their Stripe account
@@ -152,6 +153,14 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
 - [ ] Mobile app (React Native)
 - [ ] Instant booking option
 - [ ] Messaging between hosts and guests
+
+## Business Notes
+- **LLC**: ParkIt LLC — forming in Virginia ($100 filing fee)
+- **Operating Agreement**: Draft saved at `parkit/LLC-OPERATING-AGREEMENT.md` and desktop as `ParkIt-LLC-Operating-Agreement.md`
+- **Virginia LLC requirements**: $100 filing, $50/year annual registration, registered agent required
+- **Next steps**: Get EIN (irs.gov/ein), open business bank account, update Stripe to LLC tax info
+- **Marketing wedge**: Boat slips in Virginia (high-value, low-competition niche)
+- **Key competitors**: SpotHero, ParkWhiz, JustPark (all focused on commercial lots, not peer-to-peer)
 
 ## Social Media Cache Busting
 When updating metadata/OG tags, use these tools to force re-crawl:
