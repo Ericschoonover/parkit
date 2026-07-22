@@ -3,3 +3,135 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+# ParkIt Project Context
+
+## Overview
+ParkIt is a **nationwide peer-to-peer parking marketplace**. Users can list or rent driveways, garages, lots, boat slips, and RV pads in any city across the US. It is NOT limited to event parking — it supports long-term storage, boat/RV parking, and everyday parking.
+
+## Tech Stack
+- **Framework**: Next.js 16.2.10 (App Router, Turbopack)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4.3.3
+- **Database**: Turso/SQLite via Prisma 7.8
+- **Auth**: next-auth 5.0.0-beta.31 (Google OAuth + Credentials)
+- **Payments**: Stripe Connect (Express accounts for hosts, PaymentIntents for guests)
+- **Maps**: Mapbox GL JS
+- **Deployment**: Vercel (auto-deploys from GitHub push)
+- **Domain**: https://park-it.net (Cloudflare DNS → Vercel)
+
+## Critical Environment Variables
+```
+AUTH_SECRET=...
+AUTH_URL=https://park-it.net
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+DATABASE_URL=file:./dev.db
+TURSO_DATABASE_URL=libsql://parkit-db-ericschoonover.aws-us-east-1.turso.io
+TURSO_AUTH_TOKEN=...
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ...(see .env)
+STRIPE_SECRET_KEY=sk_test_...(see .env)
+STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
+STRIPE_WEBHOOK_SECRET=whsec_...(see .env)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...(see .env)
+```
+
+## Critical Dev Notes
+
+### Prisma + Turso
+- Prisma CLI CANNOT use `libsql://` URLs. Schema changes must be applied via: `turso db shell parkit-db < migration.sql`
+- `createMany` works with Turso but `skipDuplicates` is NOT supported
+- Local dev uses `file:./dev.db` (SQLite), production uses Turso
+
+### Next.js 16 Specifics
+- Directory `[city-slug]` → params accessed as `params["city-slug"]`, NOT `params.citySlug`
+- `useSearchParams()` must be wrapped in `<Suspense>` boundary
+- `export const config` with `bodyParser: false` is deprecated — use `request.text()` for raw body
+- Route handlers use `NextRequest` from `next/server`
+
+### Auth
+- `trustHost: true` is required in NextAuth config for Vercel
+- Google OAuth redirect URIs include `https://park-it.net/api/auth/callback/google`
+
+### Stripe
+- API version: `2026-06-24.dahlia`
+- Host onboarding: `/api/stripe/connect` → creates Express account + account link
+- Guest checkout: `/api/stripe/checkout` → creates PaymentIntent with Connect transfer
+- Webhook: `/api/stripe/webhook` handles payment_intent.succeeded, payment_intent.payment_failed, account.updated, charge.refunded
+
+## Key Architecture
+
+### Data Models
+- **City**: 501 seeded cities (top 10 per state + DC), but ANY city can be created on-the-fly when a listing is created for an unlisted town
+- **Venue**: Stadiums, arenas, marinas linked to cities
+- **Event**: Upcoming events linked to venues
+- **Listing**: Parking spots with full details (parkingType, spotType, surfaceType, dimensions, hookups, amenities, pricing)
+- **Booking**: PENDING → CONFIRMED (via Stripe webhook) → COMPLETED; CANCELLED on failure
+- **Review**: Bidirectional — renter reviews host, host reviews renter; one per booking per person
+- **User**: Has stripeAccountId, stripeOnboarded, emailVerified fields
+
+### Booking Flow
+1. Guest selects dates on calendar (booked dates shown in red, unavailable)
+2. BookingForm creates booking as PENDING + Stripe PaymentIntent
+3. Guest enters card details via Stripe Embedded Checkout
+4. On payment success, Stripe webhook confirms booking
+5. After booking ends, both parties can leave reviews
+
+### Cancellation Policy (enforced in code)
+- Host cancels → full refund
+- Guest cancels 24+ hrs before → full refund
+- Guest cancels <24 hrs before → 50% refund
+- No-show → no refund
+
+### Photo Documentation
+- Booking photos: before (renter only) + after (both), stored as base64 data URLs
+- Listing photos: file input → base64 data URLs (NOT stock URLs)
+
+### Geocoding
+- All new listings auto-geocoded via Nominatim for exact coordinates
+- Seed data also geocoded
+
+## What's Built
+- [x] Google OAuth with trustHost
+- [x] Domain park-it.net configured (Cloudflare → Vercel)
+- [x] Terms of Service (escrow, deposits, photos, disputes, insurance, liability)
+- [x] Privacy Policy
+- [x] 501 cities seeded (local + Turso)
+- [x] Free-text city input with autocomplete (any town in the US)
+- [x] Interactive Mapbox maps (event maps with booked badges, user location, listing detail maps)
+- [x] Listing form with full details (parkingType, spotType, surfaceType, dimensions, hookups, amenities)
+- [x] Listing detail page with type-aware pricing, user distance
+- [x] Search page with type filters, booked badges, user location + distance
+- [x] Booking system with conflict prevention, calendar date blocking
+- [x] Stripe Connect onboarding for hosts (dashboard banner)
+- [x] Stripe Embedded Checkout for guests
+- [x] Stripe webhook handling (payment success/fail, account updated, refund)
+- [x] Photo documentation (booking before/after photos)
+- [x] Real file upload on listing creation (NOT stock URLs)
+- [x] Cancellation policy enforcement with Stripe refunds
+- [x] Review system (bidirectional, after completed bookings)
+- [x] Host insurance acknowledgment checkbox on listing creation
+- [x] User profile page (listing history, booking history, reviews, member since)
+- [x] Host earnings dashboard (total earned, pending, monthly breakdown, upcoming bookings)
+- [x] About page
+- [x] Safety page
+- [x] Open Graph + Twitter card metadata for link previews
+- [x] Nationwide copy (not just event parking)
+
+## What's Remaining / Nice-to-Have
+- [ ] Email notifications (booking confirmed, reminder, review request, payout) — Resend free tier
+- [ ] Host payout dashboard with detailed transaction history
+- [ ] Report/flag listing functionality
+- [ ] Host cancellation penalties (account-level)
+- [ ] Damage deposit hold implementation (currently in ToS, not in payment flow)
+- [ ] 1099 tax reporting for hosts earning $600+/year
+- [ ] Mobile app (React Native)
+- [ ] Seasonal pricing tools for hosts
+- [ ] Instant booking option
+- [ ] Messaging between hosts and guests
+
+## Social Media Cache Busting
+When updating metadata/OG tags, use these tools to force re-crawl:
+- Facebook: https://developers.facebook.com/tools/debug/
+- Twitter/X: https://cards-dev.twitter.com/validator
+- LinkedIn: https://www.linkedin.com/post-inspector/
