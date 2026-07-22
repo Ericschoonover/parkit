@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       amount: parkingCents,
       currency: "usd",
       application_fee_amount: feeCents,
+      automatic_payment_methods: { enabled: true },
       transfer_data: {
         destination: listing.owner.stripeAccountId,
       },
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
     const depositIntent = await stripe.paymentIntents.create({
       amount: depositCents,
       currency: "usd",
+      automatic_payment_methods: { enabled: true },
       metadata: {
         bookingId: booking.id,
         listingId: listing.id,
