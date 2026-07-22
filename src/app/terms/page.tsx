@@ -194,6 +194,34 @@ export default function TermsPage() {
         </section>
 
         <section>
+          <h2 className="text-xl font-semibold text-foreground">16. Boat Slip, RV, and Long-Term Storage — Additional Terms</h2>
+          <p className="font-medium text-foreground">Boat Slips and Watercraft Parking:</p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li><strong>Marina Authority:</strong> Hosts listing boat slips or watercraft parking warrant that they have the legal right to sublease or rent the slip, including any required marina authorization, lease permission, or harbormaster approval. listing without proper authority is a violation of these Terms and may result in immediate account termination</li>
+            <li><strong>Water Damage and Flood Risk:</strong> ParkIt does not guarantee that any boat slip or watercraft parking area is safe from water damage, flooding, storm surge, tidal changes, or rising water levels. Guests are solely responsible for assessing flood risk and obtaining appropriate marine or watercraft insurance</li>
+            <li><strong>Coast Guard and Regulatory Compliance:</strong> Hosts and Guests are responsible for complying with all U.S. Coast Guard regulations, state boating laws, marina rules, and environmental regulations. ParkIt is not responsible for any fines, penalties, or enforcement actions resulting from non-compliance</li>
+            <li><strong>No Boat Insurance Provided:</strong> ParkIt does not provide marine insurance, hull coverage, or liability coverage for watercraft. Guests must maintain their own boat insurance. The damage deposit applies to property damage only and does not cover sinkage, submersion, or total loss of a watercraft</li>
+            <li><strong>Mooring and Docking:</strong> Hosts are responsible for ensuring the slip is properly maintained, including cleats, pilings, dock lines, and electrical shore power connections. Guests are responsible for properly mooring their watercraft and confirming that the slip is suitable for their vessel&apos;s size and weight</li>
+          </ul>
+
+          <p className="font-medium text-foreground mt-4">RV and Trailer Parking:</p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li><strong>Hookup Liability:</strong> If a listing includes electrical, water, sewer, or other utility hookups, the Host is responsible for ensuring these connections are safe, properly installed, and compliant with local codes. ParkIt is not liable for property damage, fire, water damage, or injury resulting from faulty hookups. Guests use hookups at their own risk</li>
+            <li><strong>Oversized Vehicle Risk:</strong> RVs, trailers, and campers may cause damage to driveways, landscaping, underground utilities, overhanging structures, and neighboring properties due to their weight, height, and turning radius. Guests are responsible for all damage caused by maneuvering oversized vehicles and should verify clearance, weight limits, and surface capacity before booking</li>
+            <li><strong>DOT and Road Compliance:</strong> Guests are solely responsible for ensuring their RV, trailer, or oversized vehicle complies with all Department of Transportation requirements, including registration, lighting, weight limits, and towing laws. ParkIt is not responsible for any DOT violations or fines</li>
+            <li><strong>Utility Costs:</strong> If a listing includes hookups, any utility costs (electric, water, sewer) exceeding normal usage may be billed to the Guest by the Host outside the Platform. ParkIt does not facilitate or guarantee payment for utility overages</li>
+          </ul>
+
+          <p className="font-medium text-foreground mt-4">Long-Term Storage (30+ Days):</p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li><strong>Bailment:</strong> When a Guest stores a vehicle or property at a Host&apos;s location for 30 or more consecutive days, a bailment relationship may arise under applicable state law. This may impose a higher duty of care on the Host than short-term parking. Hosts offering long-term storage should consult with a legal professional regarding their obligations as bailees</li>
+            <li><strong>Abandoned Vehicle:</strong> If a Guest&apos;s vehicle remains at the Host&apos;s location beyond the booked period without extension, the Host may be subject to state and local abandoned vehicle laws. ParkIt is not responsible for towing, storage fees, or disposal of abandoned vehicles. Hosts should follow their jurisdiction&apos;s legal process for abandoned property</li>
+            <li><strong>Property Stored at Owner&apos;s Risk:</strong> Except to the extent imposed by law, Hosts are not responsible for damage to vehicles or property stored at their location due to natural causes (weather, animals, tree fall), theft, vandalism, or other events beyond the Host&apos;s control. Guests should maintain comprehensive insurance coverage for long-term storage</li>
+            <li><strong>Access and Inspection:</strong> For long-term storage bookings, Guests should clarify with the Host whether periodic access or inspection of the stored vehicle is permitted. ParkIt does not guarantee access rights beyond what is described in the listing</li>
+          </ul>
+        </section>
+
+        <section>
           <h2 className="text-xl font-semibold text-foreground">16. Limitation of Liability</h2>
           <p><strong>To the maximum extent permitted by law, ParkIt, its officers, directors, employees, and agents shall not be liable for:</strong></p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
@@ -224,7 +252,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">17. Indemnification</h2>
+          <h2 className="text-xl font-semibold text-foreground">18. Indemnification</h2>
           <p>You agree to indemnify, defend, and hold harmless ParkIt, its officers, directors, employees, and agents from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys&apos; fees) arising from or relating to:</p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
             <li>Your use of the Platform</li>
@@ -237,7 +265,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">18. Prohibited Conduct</h2>
+          <h2 className="text-xl font-semibold text-foreground">19. Prohibited Conduct</h2>
           <p>You may not:</p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
             <li>Use the Platform for any unlawful purpose</li>
@@ -252,36 +280,36 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">19. User Disputes</h2>
+          <h2 className="text-xl font-semibold text-foreground">20. User Disputes</h2>
           <p><strong>ParkIt is not a party to any dispute between users.</strong> You are solely responsible for your interactions with other users, both on and off the Platform. ParkIt has no obligation to mediate, arbitrate, or resolve any dispute between users, except as expressly set forth in these Terms regarding damage deposit claims processed through the Platform.</p>
           <p className="mt-2">If you have a dispute with another user, you release ParkIt from any claims, demands, and damages of every kind and nature, known and unknown, arising out of or in any way connected with such disputes. If you are a California resident, you waive California Civil Code Section 1542, which says: &quot;A general release does not extend to claims that the creditor or releasing party does not know or suspect to exist in his or her favor at the time of executing the release.&quot;</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">20. Intellectual Property</h2>
+          <h2 className="text-xl font-semibold text-foreground">21. Intellectual Property</h2>
           <p>All content, trademarks, logos, and intellectual property on the Platform are owned by or licensed to ParkIt. You may not copy, modify, distribute, or reverse-engineer any part of the Platform without written permission.</p>
           <p className="mt-2">Users retain ownership of content they upload to the Platform (photos, descriptions, reviews). By uploading content, you grant ParkIt a non-exclusive, worldwide, royalty-free license to use, display, and distribute your content in connection with operating the Platform.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">21. User-Generated Content and Moderation</h2>
+          <h2 className="text-xl font-semibold text-foreground">22. User-Generated Content and Moderation</h2>
           <p>ParkIt hosts user-generated content including listings, reviews, and photos. We are not obligated to monitor all content, but we reserve the right to remove content that violates these Terms.</p>
           <p className="mt-2">If you believe content on the Platform infringes your copyright, you may submit a DMCA takedown notice to our designated agent at <strong>support@park-it.net</strong> with: (1) identification of the copyrighted work, (2) identification of the infringing material, (3) your contact information, (4) a statement of good faith belief, and (5) your physical or electronic signature.</p>
           <p className="mt-2">Reviews are user-generated content and do not represent the views of ParkIt. ParkIt does not guarantee the accuracy of reviews and is not liable for defamatory or false statements in reviews. You may flag reviews that violate our policies for review.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">22. Termination</h2>
+          <h2 className="text-xl font-semibold text-foreground">23. Termination</h2>
           <p>ParkIt reserves the right to suspend or terminate your account at any time for any reason, including violation of these Terms. You may also close your account at any time by contacting us. Upon termination, any pending payouts will be processed, any pending disputes will be resolved, and these Terms remain in effect.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">23. Governing Law</h2>
+          <h2 className="text-xl font-semibold text-foreground">24. Governing Law</h2>
           <p>These Terms are governed by the laws of the State of Michigan, without regard to its conflict of law provisions. If Michigan law cannot be applied to a dispute, the laws of the state where the parking spot is located shall apply.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">24. Dispute Resolution and Binding Arbitration</h2>
+          <h2 className="text-xl font-semibold text-foreground">25. Dispute Resolution and Binding Arbitration</h2>
           <p className="font-medium text-foreground">Mandatory Arbitration:</p>
           <p>You and ParkIt agree that any dispute, claim, or controversy arising out of or relating to these Terms or the Platform shall be resolved exclusively through binding arbitration, rather than in court, except that either party may bring an individual action in small claims court for disputes within the court&apos;s jurisdiction.</p>
           <p className="mt-2 font-medium text-foreground">Class Action Waiver:</p>
@@ -296,27 +324,27 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">25. Force Majeure</h2>
+          <h2 className="text-xl font-semibold text-foreground">26. Force Majeure</h2>
           <p>ParkIt shall not be liable for any failure or delay in performing our obligations under these Terms where such failure or delay results from any cause beyond our reasonable control, including but not limited to: acts of God, natural disasters, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, earthquakes, pandemics, epidemics, government actions, labor disputes, power or telecommunications failures, or Internet disruptions. In such event, our obligations under these Terms will be suspended for the duration of the force majeure event.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">26. Severability</h2>
+          <h2 className="text-xl font-semibold text-foreground">27. Severability</h2>
           <p>If any provision of these Terms is found to be unenforceable, the remaining provisions shall remain in full force and effect.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">27. Entire Agreement</h2>
+          <h2 className="text-xl font-semibold text-foreground">28. Entire Agreement</h2>
           <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and ParkIt regarding the use of the Platform and supersede all prior agreements and understandings.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">28. Changes to Terms</h2>
+          <h2 className="text-xl font-semibold text-foreground">29. Changes to Terms</h2>
           <p>ParkIt may update these Terms at any time. We will notify you of material changes by posting the updated Terms on the Platform and, where required, by email at least 14 days before changes take effect. Your continued use after changes take effect constitutes acceptance of the updated Terms.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">29. Contact</h2>
+          <h2 className="text-xl font-semibold text-foreground">30. Contact</h2>
           <p>For questions about these Terms, contact us at support@park-it.net.</p>
         </section>
       </div>
