@@ -223,8 +223,8 @@ function NewListingForm() {
                     key={pt.value}
                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                       formData.parkingType === pt.value
-                        ? "border-green-600 bg-green-50 ring-1 ring-green-600"
-                        : "border-muted hover:border-green-200"
+                        ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                        : "border-muted hover:border-blue-200"
                     }`}
                   >
                     <input
@@ -278,7 +278,7 @@ function NewListingForm() {
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
-                  className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-muted-foreground hover:border-green-600 hover:text-green-600 transition-colors"
+                  className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-muted-foreground hover:border-blue-600 hover:text-blue-600 transition-colors"
                 >
                   <ImageIcon className="h-6 w-6 mb-1" />
                   <span className="text-xs">Add Photo</span>
@@ -400,7 +400,7 @@ function NewListingForm() {
                           <button
                             key={c.id}
                             type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-green-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
                             onMouseDown={(e) => {
                               e.preventDefault();
                               setFormData({ ...formData, city: c.name, cityId: c.id });
@@ -751,8 +751,8 @@ function NewListingForm() {
                     key={item.key}
                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                       formData[item.key]
-                        ? "border-green-600 bg-green-50"
-                        : "border-muted hover:border-green-200"
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-muted hover:border-blue-200"
                     }`}
                   >
                     <Checkbox
@@ -778,14 +778,16 @@ function NewListingForm() {
                 Access Instructions
               </h3>
               <p className="text-xs text-muted-foreground">
-                Help parkers find and access your spot easily
+                Help parkers find and access your spot easily.{" "}
+                <strong className="text-amber-600">Do not include gate codes, lock combinations, or security passwords in this field.</strong>{" "}
+                Access instructions are visible to all users before booking. Share sensitive access details only with confirmed renters after booking.
               </p>
               <div>
                 <Label htmlFor="accessInstructions">How to access the spot</Label>
                 <Textarea
                   id="accessInstructions"
                   placeholder={
-                    "e.g., Enter through the side gate on Oak St. The spot is the second driveway on the left. Look for the ParkIt sign. Gate code is 1234."
+                    "e.g., Enter through the side gate on Oak St. The spot is the second driveway on the left. Look for the ParkIt sign."
                   }
                   value={formData.accessInstructions}
                   onChange={(e) => setFormData({ ...formData, accessInstructions: e.target.value })}
@@ -835,11 +837,11 @@ function NewListingForm() {
                     />
                     <div>
                       <p className="text-sm font-medium">
-                        I confirm I have homeowner&apos;s or renter&apos;s insurance that covers third-party vehicle parking on my property
+                        I attest that I have homeowner&apos;s or renter&apos;s insurance that covers third-party vehicle parking on my property*
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        ParkIt is a marketplace, not an insurer. You are responsible for maintaining adequate insurance.{" "}
-                        <a href="/terms#insurance" className="underline hover:text-foreground">
+                        This is your personal attestation. ParkIt does not verify, confirm, or guarantee that any host maintains insurance coverage. You are solely responsible for maintaining adequate insurance. ParkIt is not an insurer.{" "}
+                        <a href="/terms" className="underline hover:text-foreground">
                           View insurance requirements
                         </a>
                       </p>
@@ -851,7 +853,7 @@ function NewListingForm() {
 
             <Button
               type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 h-11"
+              className="w-full bg-blue-600 hover:bg-blue-700 h-11"
               disabled={loading || !formData.hasInsurance}
             >
               {loading ? "Creating..." : "Create Listing"}

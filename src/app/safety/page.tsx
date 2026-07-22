@@ -47,7 +47,7 @@ export default function SafetyPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 Always pay through ParkIt. Never pay cash or send money off-platform.
-                Our escrow system holds your payment until the booking is complete.
+                Your payment is processed securely through Stripe.
               </p>
             </div>
             <div className="p-4 rounded-xl border bg-card">
@@ -74,7 +74,8 @@ export default function SafetyPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 We require hosts to confirm they have homeowner&apos;s or renter&apos;s insurance
-                that covers third-party vehicle parking. Verify with your provider.
+                that covers third-party vehicle parking. Verify with your provider that
+                your policy covers this — many standard policies exclude commercial use.
               </p>
             </div>
             <div className="p-4 rounded-xl border bg-card">
@@ -94,7 +95,7 @@ export default function SafetyPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 Describe your space honestly — dimensions, clearance, access instructions,
-                and any restrictions. Inaccurate listings lead to disputes.
+                and any restrictions. Inaccurate listings lead to disputes and refunds.
               </p>
             </div>
             <div className="p-4 rounded-xl border bg-card">
@@ -105,6 +106,7 @@ export default function SafetyPage() {
               <p className="text-xs text-muted-foreground">
                 Provide clear access instructions. If your space has a gate or lock,
                 share codes only with confirmed renters through the platform.
+                Do not post gate codes in public listing descriptions.
               </p>
             </div>
           </div>
@@ -119,10 +121,11 @@ export default function SafetyPage() {
               dispute resolution process:
             </p>
             <ol className="list-decimal pl-5 mt-2 space-y-1">
-              <li>File a claim within 24 hours of the booking end time</li>
+              <li>File a claim within 48 hours of the booking end time</li>
               <li>Include photos and a description of the damage</li>
-              <li>Both parties have 48 hours to respond with evidence</li>
+              <li>The other party has 48 hours to respond with evidence</li>
               <li>ParkIt reviews all evidence and issues a decision within 5 business days</li>
+              <li>Either party may appeal within 14 days</li>
             </ol>
             <p className="mt-3">
               See our <a href="/terms" className="underline hover:text-foreground">Terms of Service</a> for
@@ -135,13 +138,24 @@ export default function SafetyPage() {
         <section className="p-6 rounded-xl bg-red-50 border border-red-200">
           <div className="flex items-center gap-3 mb-3">
             <Phone className="h-5 w-5 text-red-600" />
-            <h2 className="text-xl font-semibold text-red-800">Emergency</h2>
+            <h2 className="text-xl font-semibold text-red-800">Emergency &amp; Reporting</h2>
           </div>
-          <p className="text-sm text-red-700">
-            If you are in immediate danger, call <strong>911</strong>. ParkIt is not a
-            substitute for emergency services. For non-emergency safety concerns about
-            a listing or user, contact us at <strong>support@park-it.net</strong>.
-          </p>
+          <div className="space-y-3 text-sm text-red-700">
+            <p>
+              <strong>If you are in immediate danger, call 911.</strong> ParkIt is not a
+              substitute for emergency services.
+            </p>
+            <p>
+              <strong>For theft, vandalism, or property crime:</strong> File a police report
+              with your local law enforcement agency. ParkIt is a marketplace and cannot
+              investigate criminal activity. Provide your police report number when filing
+              a damage claim on the Platform.
+            </p>
+            <p>
+              <strong>For non-emergency safety concerns</strong> about a listing or user,
+              contact us at <strong>support@park-it.net</strong>.
+            </p>
+          </div>
         </section>
       </div>
     </div>
