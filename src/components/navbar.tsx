@@ -37,10 +37,12 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <Car className="h-6 w-6 text-green-600" />
-          <span className="text-green-600">Park</span>
-          <span>It</span>
+        <Link href="/" className="flex items-center gap-0">
+          <img src="/favicon.svg" alt="ParkIt" className="h-8 w-8" />
+          <span className="text-xl font-bold">
+            <span className="text-blue-600">Park</span>
+            <span className="text-slate-800">It</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -51,7 +53,7 @@ export function Navbar() {
               href={link.href}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive(link.href)
-                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
@@ -64,7 +66,7 @@ export function Navbar() {
               href="/listings/new"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive("/listings/new")
-                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
@@ -81,7 +83,7 @@ export function Navbar() {
               <DropdownMenuTrigger render={<Button variant="ghost" className="gap-2 pl-1 pr-2 h-10 rounded-full border" />}>
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                  <AvatarFallback className="text-xs bg-green-100 text-green-700">
+                  <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
                     {session.user?.name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -92,7 +94,7 @@ export function Navbar() {
                 <div className="flex items-center gap-2 p-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                    <AvatarFallback className="text-xs bg-green-100 text-green-700">
+                    <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
                       {session.user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
@@ -129,7 +131,7 @@ export function Navbar() {
               <LinkButton variant="ghost" href="/auth/signin">
                 Sign In
               </LinkButton>
-              <LinkButton href="/auth/signup" className="bg-green-600 hover:bg-green-700">
+              <LinkButton href="/auth/signup" className="bg-blue-600 hover:bg-blue-700">
                 Get Started
               </LinkButton>
             </div>
@@ -143,10 +145,12 @@ export function Navbar() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] p-0">
             <SheetHeader className="border-b px-6 py-4">
-              <SheetTitle className="flex items-center gap-2">
-                <Car className="h-5 w-5 text-green-600" />
-                <span className="text-green-600 font-bold">Park</span>
-                <span className="font-bold">It</span>
+              <SheetTitle className="flex items-center gap-0">
+                <img src="/favicon.svg" alt="ParkIt" className="h-6 w-6" />
+                <span className="text-lg font-bold">
+                  <span className="text-blue-600">Park</span>
+                  <span className="text-slate-800">It</span>
+                </span>
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-4 pt-4">
@@ -157,7 +161,7 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive(link.href)
-                      ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                      ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
@@ -173,7 +177,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive("/listings/new")
-                        ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
@@ -185,7 +189,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive("/dashboard")
-                        ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
@@ -197,7 +201,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive("/bookings")
-                        ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
@@ -209,7 +213,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive("/profile")
-                        ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
@@ -246,7 +250,7 @@ export function Navbar() {
                   <LinkButton href="/auth/signin" className="w-full" onClick={() => setMobileOpen(false)}>
                     Sign In
                   </LinkButton>
-                  <LinkButton href="/auth/signup" className="w-full bg-green-600 hover:bg-green-700" onClick={() => setMobileOpen(false)}>
+                  <LinkButton href="/auth/signup" className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setMobileOpen(false)}>
                     Get Started
                   </LinkButton>
                 </div>

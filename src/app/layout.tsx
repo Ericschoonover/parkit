@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: "ParkIt - Nationwide Parking Marketplace",
   description:
     "ParkIt is a nationwide peer-to-peer parking marketplace. List or rent driveways, garages, lots, boat slips, and RV pads in any city across the US.",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "ParkIt - Nationwide Parking Marketplace",
     description:
@@ -28,12 +32,14 @@ export const metadata: Metadata = {
     siteName: "ParkIt",
     type: "website",
     url: "https://park-it.net",
+    images: [{ url: "/logo.svg", width: 200, height: 48, alt: "ParkIt" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "ParkIt - Nationwide Parking Marketplace",
     description:
       "List or rent driveways, garages, lots, boat slips, and RV pads in any city across the US.",
+    images: ["/logo.svg"],
   },
 };
 
