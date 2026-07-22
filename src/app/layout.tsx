@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { CookieConsent } from "@/components/cookie-consent";
+import { ResetCookieSettings } from "@/components/reset-cookie-settings";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Link from "next/link";
@@ -98,17 +99,7 @@ export default function RootLayout({
                       <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
                       <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
                       <li><Link href="/dmca" className="hover:text-foreground transition-colors">DMCA</Link></li>
-                      <li>
-                        <button
-                          onClick={() => {
-                            localStorage.removeItem("parkit_cookie_consent");
-                            window.location.reload();
-                          }}
-                          className="hover:text-foreground transition-colors text-left"
-                        >
-                          Cookie Settings
-                        </button>
-                      </li>
+                      <li><ResetCookieSettings /></li>
                     </ul>
                   </div>
                 </div>
